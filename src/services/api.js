@@ -1,0 +1,116 @@
+import axios from 'axios'
+
+const BASE_URL = 'https://pos-pro-gt-backend.onrender.com/api'
+
+const api = axios.create({
+  baseURL: BASE_URL,
+  timeout: 60000,
+  headers: { 'Content-Type': 'application/json' }
+})
+
+api.interceptors.request.use(
+  async config => {
+    try {
+      const token = window.localStorage.getItem('token')
+      if (token) config.headers.Authorization = `Bearer ${token}`
+    } catch (e) {}
+    return config
+  },
+  error => Promise.reject(error)
+)
+
+api.interceptors.response.use(
+  response => response,
+  error => {
+    try {
+      if (error.response?.status === 401) {
+        window.localStorage.removeItem('token')
+        window.localStorage.removeItem('usuario')
+        window.location.href = '/login'
+      }
+    } catch (e) {}
+    return Promise.reject(error)
+  }
+)
+
+export const authService = {
+  login: (email, password) => api.post('/auth/login', { email, password }),
+}
+
+export const productosService = {
+  obtenerTodos: () => api.get('/productos'),
+  crear: (data) => api.post('/productos', data),
+  actualizar: (id, data) => api.put(`/productos/${id}`, data),
+  eliminar: (id) => api.delete(`/productos/${id}`),
+}
+
+export const ventasService = {
+  obtenerTodas: () => api.get('/ventas'),
+  crear: (data) => api.post('/ventas', data),
+  resumenHoy: () => api.get('/ventas/resumen/hoy'),
+  resumenRango: (desde, hasta) => api.get(`/ventas/resumen/rango?desde=${desde}&hasta=${hasta}`),
+  cancelar: (id, data) => api.put(`/ventas/${id}/cancelar`, data),
+}
+
+export const clientesService = {
+  obtenerTodos: () => api.get('/clientes'),
+  crear: (data) => api.post('/clientes', data),
+  actualizar: (id, data) => api.put(`/clientes/${id}`, data),
+  eliminar: (id) => api.delete(`/clientes/${id}`),
+}
+
+export const usuariosService = {
+  listar: () => api.get('/auth/usuarios'),
+  crear: (data) => api.post('/auth/crear-usuario', data),
+  toggleActivo: (id) => api.put(`/auth/usuarios/${id}/toggle`),
+  eliminar: (id) => api.delete(`/auth/usuarios/${id}`),
+  cambiarPassword: (id, password) => api.put(`/auth/usuarios/${id}/password`, { password }),
+}
+
+export const inventarioService = {
+  movimientos: () => api.get('/inventario/movimientos'),
+}
+
+export const cajaService = {
+  obtenerHoy: () => api.get('/caja/hoy'),
+  abrir: (data) => api.post('/caja/abrir', data),
+  cerrar: (data) => api.post('/caja/cerrar', data),
+  agregarGasto: (data) => api.post('/caja/gasto', data),
+  historial: () => api.get('/caja/historial'),
+}
+
+export const dashboardService = {
+  obtener: () => api.get('/dashboard'),
+}
+
+export const proveedoresService = {
+  obtenerTodos: () => api.get('/proveedores'),
+  crear: (data) => api.post('/proveedores', data),
+  actualizar: (id, data) => api.put(`/proveedores/${id}`, data),
+  eliminar: (id) => api.delete(`/proveedores/${id}`),
+}
+
+export const sucursalesService = {
+  obtenerTodas: () => api.get('/sucursales'),
+  crear: (data) => api.post('/sucursales', data),
+  actualizar: (id, data) => api.put(`/sucursales/${id}`, data),
+  eliminar: (id) => api.delete(`/sucursales/${id}`),
+}
+
+export const monitorService = {
+  health: () => api.get('/monitor/health'),
+  stats: () => api.get('/monitor/stats'),
+}
+export const categoriasService = {
+  obtenerTodas: () => api.get('/productos/categorias/todas'),
+  crear: (data) => api.post('/productos/categorias', data),
+  actualizar: (id, data) => api.put(`/productos/categorias/${id}`, data),
+  eliminar: (id) => api.delete(`/productos/categorias/${id}`),
+}
+
+export const configuracionService = {
+  obtener: () => api.get('/configuracion'),
+  actualizar: (data) => api.put('/configuracion', data),
+}
+
+export default api
