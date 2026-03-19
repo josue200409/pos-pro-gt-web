@@ -2,6 +2,7 @@ import { Outlet, NavLink, useNavigate } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
 import { useTema } from '../context/TemaContext'
 import { useState } from 'react'
+import Notificaciones from './Notificaciones'
 
 const MENU_ADMIN = [
   { path: '/', label: 'Dashboard', emoji: '📊' },
@@ -28,6 +29,7 @@ const MENU_EMPLEADO = [
   { path: '/pos', label: 'POS / Cobrar', emoji: '🛒' },
   { path: '/ventas', label: 'Ventas', emoji: '💰' },
   { path: '/ia', label: 'Asistente IA', emoji: '🧠' },
+  { path: '/perfil', label: 'Mi Perfil', emoji: '👤' },
   { path: '/ayuda', label: 'Ayuda', emoji: '📖' },
 ]
 
@@ -44,10 +46,9 @@ export default function Layout() {
   }
 
   return (
-    <div className={`flex h-screen ${modoOscuro ? 'dark bg-gray-900' : 'bg-gray-50'}`}>
+    <div className={`flex h-screen ${modoOscuro ? 'bg-gray-900' : 'bg-gray-50'}`}>
       {/* SIDEBAR */}
-      <aside className={`${sidebarAbierto ? 'w-64' : 'w-16'} transition-all duration-300 flex flex-col ${modoOscuro ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-200'} border-r shadow-lg`}>
-        
+      <aside className={`${sidebarAbierto ? 'w-64' : 'w-16'} transition-all duration-300 flex flex-col ${modoOscuro ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-200'} border-r shadow-lg flex-shrink-0`}>
         {/* LOGO */}
         <div className={`p-4 border-b ${modoOscuro ? 'border-gray-700' : 'border-gray-100'} flex items-center justify-between`}>
           {sidebarAbierto && (
@@ -59,10 +60,8 @@ export default function Layout() {
               </div>
             </div>
           )}
-          <button
-            onClick={() => setSidebarAbierto(!sidebarAbierto)}
-            className={`p-1.5 rounded-lg transition-all ${modoOscuro ? 'hover:bg-gray-700 text-gray-400' : 'hover:bg-gray-100 text-gray-500'}`}
-          >
+          <button onClick={() => setSidebarAbierto(!sidebarAbierto)}
+            className={`p-1.5 rounded-lg transition-all ${modoOscuro ? 'hover:bg-gray-700 text-gray-400' : 'hover:bg-gray-100 text-gray-500'}`}>
             {sidebarAbierto ? '◀' : '▶'}
           </button>
         </div>
@@ -71,8 +70,12 @@ export default function Layout() {
         {sidebarAbierto && (
           <div className={`p-3 mx-3 mt-3 rounded-2xl animate-fade-in ${modoOscuro ? 'bg-gray-700' : 'bg-blue-50'}`}>
             <div className="flex items-center gap-2">
-              <div className={`w-9 h-9 rounded-xl flex items-center justify-center text-lg shadow-sm ${modoOscuro ? 'bg-gray-600' : 'bg-white'}`}>
-                {usuario?.rol === 'admin' ? '👑' : '👤'}
+              <div className={`w-9 h-9 rounded-xl flex items-center justify-center text-lg shadow-sm overflow-hidden ${modoOscuro ? 'bg-gray-600' : 'bg-white'}`}>
+                {usuario?.foto_url ? (
+                  <img src={usuario.foto_url} alt={usuario.nombre} className="w-full h-full object-cover" />
+                ) : (
+                  usuario?.rol === 'admin' ? '👑' : '👤'
+                )}
               </div>
               <div className="min-w-0">
                 <p className={`text-xs font-bold truncate ${modoOscuro ? 'text-white' : 'text-gray-800'}`}>{usuario?.nombre}</p>
@@ -89,15 +92,12 @@ export default function Layout() {
             <p className={`text-xs font-bold uppercase px-3 py-1 ${modoOscuro ? 'text-gray-500' : 'text-gray-400'}`}>Menú</p>
           )}
           {menu.map(item => (
-            <NavLink
-              key={item.path}
-              to={item.path}
-              end={item.path === '/'}
+            <NavLink key={item.path} to={item.path} end={item.path === '/'}
               title={!sidebarAbierto ? item.label : ''}
               className={({ isActive }) =>
                 `flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-semibold transition-all duration-200 ${
                   isActive
-                    ? 'bg-blue-600 text-white shadow-md shadow-blue-200'
+                    ? 'bg-blue-600 text-white shadow-md'
                     : modoOscuro
                       ? 'text-gray-300 hover:bg-gray-700 hover:text-white'
                       : 'text-gray-600 hover:bg-gray-100 hover:text-gray-900'
@@ -112,22 +112,15 @@ export default function Layout() {
 
         {/* FOOTER */}
         <div className={`p-3 border-t space-y-2 ${modoOscuro ? 'border-gray-700' : 'border-gray-100'}`}>
-          {/* Toggle modo oscuro */}
-          <button
-            onClick={toggleTema}
+          <button onClick={toggleTema}
             className={`w-full flex items-center gap-3 px-3 py-2 rounded-xl text-sm font-semibold transition-all ${
               modoOscuro ? 'bg-gray-700 text-yellow-400 hover:bg-gray-600' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
-            }`}
-          >
+            }`}>
             <span>{modoOscuro ? '☀️' : '🌙'}</span>
             {sidebarAbierto && <span>{modoOscuro ? 'Modo Claro' : 'Modo Oscuro'}</span>}
           </button>
-
-          {/* Cerrar sesión */}
-          <button
-            onClick={handleLogout}
-            className="w-full flex items-center gap-3 px-3 py-2 rounded-xl bg-red-50 text-red-600 font-semibold text-sm hover:bg-red-100 transition-all border border-red-100"
-          >
+          <button onClick={handleLogout}
+            className="w-full flex items-center gap-3 px-3 py-2 rounded-xl bg-red-50 text-red-600 font-semibold text-sm hover:bg-red-100 transition-all border border-red-100">
             <span>🚪</span>
             {sidebarAbierto && <span>Cerrar Sesión</span>}
           </button>
@@ -142,12 +135,17 @@ export default function Layout() {
             {new Date().toLocaleDateString('es-GT', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })}
           </div>
           <div className="flex items-center gap-3">
+            <Notificaciones />
             <div className={`flex items-center gap-2 px-3 py-1.5 rounded-xl text-xs font-bold ${modoOscuro ? 'bg-green-900 text-green-400' : 'bg-green-50 text-green-600'}`}>
               <div className="w-2 h-2 rounded-full bg-green-500 animate-pulse"></div>
               En línea
             </div>
-            <div className={`w-8 h-8 rounded-xl flex items-center justify-center text-lg ${modoOscuro ? 'bg-gray-700' : 'bg-gray-100'}`}>
-              {usuario?.rol === 'admin' ? '👑' : '👤'}
+            <div className={`w-8 h-8 rounded-xl flex items-center justify-center text-lg overflow-hidden ${modoOscuro ? 'bg-gray-700' : 'bg-gray-100'}`}>
+              {usuario?.foto_url ? (
+                <img src={usuario.foto_url} alt={usuario.nombre} className="w-full h-full object-cover" />
+              ) : (
+                usuario?.rol === 'admin' ? '👑' : '👤'
+              )}
             </div>
           </div>
         </div>
