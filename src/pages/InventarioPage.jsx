@@ -309,12 +309,8 @@ const eliminarCategoria = async (c) => {
 )}
 
       {/* TAB PRODUCTOS */}
-      {cargando ? <SkeletonTable filas={6} modoOscuro={modoOscuro} /> : (
-  <div className={`${card} overflow-hidden`}>
-    ...tabla...
-  </div>
-)}
       {tab === 'productos' && (
+        
         <>
           <div className={`${card} p-4 mb-4`}>
             <div className="flex gap-3 flex-wrap">
