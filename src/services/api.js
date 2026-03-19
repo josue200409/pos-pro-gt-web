@@ -67,10 +67,6 @@ export const usuariosService = {
   cambiarPassword: (id, password) => api.put(`/auth/usuarios/${id}/password`, { password }),
 }
 
-export const inventarioService = {
-  movimientos: () => api.get('/inventario/movimientos'),
-}
-
 export const cajaService = {
   obtenerHoy: () => api.get('/caja/hoy'),
   abrir: (data) => api.post('/caja/abrir', data),
@@ -113,6 +109,26 @@ export const categoriasService = {
 export const configuracionService = {
   obtener: () => api.get('/configuracion'),
   actualizar: (data) => api.put('/configuracion', data),
+}
+
+export const perfilService = {
+  actualizar: (data) => api.put('/auth/perfil', data),
+  cambiarPassword: (data) => api.put('/auth/cambiar-password', data),
+}
+
+export const inventarioService = {
+  movimientos: () => api.get('/inventario/movimientos'),
+  lotes: () => api.get('/inventario/lotes'),
+  lotesAlertas: () => api.get('/inventario/lotes/alertas'),
+  crearLote: (data) => api.post('/inventario/lotes', data),
+  actualizarLote: (id, data) => api.put(`/inventario/lotes/${id}`, data),
+  eliminarLote: (id) => api.delete(`/inventario/lotes/${id}`),
+  promociones: () => api.get('/inventario/promociones'),
+  promocionesActivas: () => api.get('/inventario/promociones/activas'),
+  crearPromocion: (data) => api.post('/inventario/promociones', data),
+  actualizarPromocion: (id, data) => api.put(`/inventario/promociones/${id}`, data),
+  eliminarPromocion: (id) => api.delete(`/inventario/promociones/${id}`),
+  importarExcel: (data) => api.post('/inventario/importar', data),
 }
 
 export default api

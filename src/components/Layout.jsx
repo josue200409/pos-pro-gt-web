@@ -19,6 +19,7 @@ const MENU_ADMIN = [
   { path: '/ia', label: 'Asistente IA', emoji: '🧠' },
   { path: '/seguridad', label: 'Seguridad', emoji: '🔒' },
   { path: '/admin', label: 'Administración', emoji: '⚙️' },
+  { path: '/perfil', label: 'Mi Perfil', emoji: '👤' },
 ]
 
 const MENU_EMPLEADO = [

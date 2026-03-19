@@ -18,6 +18,7 @@ import MermasPage from './pages/MermasPage'
 import TurnosPage from './pages/TurnosPage'
 import SeguridadPage from './pages/SeguridadPage'
 import IAPage from './pages/IAPage'
+import PerfilPage from './pages/PerfilPage'
 
 function RutaProtegida({ children, soloAdmin = false }) {
   const { usuario, cargando } = useAuth()
@@ -48,6 +49,7 @@ function AppRoutes() {
         <Route path="turnos" element={<TurnosPage />} />
         <Route path="seguridad" element={<RutaProtegida soloAdmin><SeguridadPage /></RutaProtegida>} />
         <Route path="ia" element={<IAPage />} />
+        <Route path="perfil" element={<PerfilPage />} />
       </Route>
     </Routes>
   )
