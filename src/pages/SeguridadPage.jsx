@@ -5,13 +5,6 @@ import { useTema } from '../context/TemaContext'
 const BASE_URL = 'https://pos-pro-gt-backend.onrender.com/api'
 
 async function apiSeguridad(endpoint, method = 'GET', body = null) {
-const { modoOscuro } = useTema()
-const bg = modoOscuro ? 'bg-gray-900' : 'bg-gray-50'
-const card = `rounded-2xl border ${modoOscuro ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-100'}`
-const text = modoOscuro ? 'text-white' : 'text-gray-800'
-const textSub = modoOscuro ? 'text-gray-400' : 'text-gray-500'
-const inputCls = `flex-1 px-3 py-2 rounded-xl border focus:outline-none text-sm ${modoOscuro ? 'bg-gray-700 border-gray-600 text-white placeholder-gray-400' : 'border-gray-200'}`
-  const token = localStorage.getItem('token')
   const config = {
     method,
     headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` }
@@ -33,6 +26,12 @@ export default function SeguridadPage() {
   const [emailBackup, setEmailBackup] = useState('')
   const [modalEmail, setModalEmail] = useState(false)
   const [descargando, setDescargando] = useState(false)
+  const { modoOscuro } = useTema()
+  const bg = modoOscuro ? 'bg-gray-900' : 'bg-gray-50'
+  const card = `rounded-2xl border ${modoOscuro ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-100'}`
+  const text = modoOscuro ? 'text-white' : 'text-gray-800'
+  const textSub = modoOscuro ? 'text-gray-400' : 'text-gray-500'
+  const inputCls = `flex-1 px-3 py-2 rounded-xl border focus:outline-none text-sm ${modoOscuro ? 'bg-gray-700 border-gray-600 text-white placeholder-gray-400' : 'border-gray-200'}`
 
   useEffect(() => {
     if (vista === 'actividad') cargarActividad()
