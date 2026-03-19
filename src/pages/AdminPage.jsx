@@ -2,14 +2,15 @@ import { useState, useEffect } from 'react'
 import { usuariosService, configuracionService } from '../services/api'
 import { useTema } from '../context/TemaContext'
 import { useToast } from '../components/Toast'
+import SubirFoto from '../components/SubirFoto'
 
 export default function AdminPage() {
+  const [form, setForm] = useState({ nombre: '', email: '', password: '', rol: 'empleado', foto_url: '' })
   const { toast } = useToast()
   const { modoOscuro } = useTema()
   const [usuarios, setUsuarios] = useState([])
   const [config, setConfig] = useState({})
   const [modalUsuario, setModalUsuario] = useState(false)
-  const [form, setForm] = useState({ nombre: '', email: '', password: '', rol: 'empleado' })
   const [guardandoConfig, setGuardandoConfig] = useState(false)
   const [tab, setTab] = useState('usuarios')
 
@@ -108,8 +109,12 @@ export default function AdminPage() {
                   <tr key={u.id} className={`transition-colors ${modoOscuro ? 'hover:bg-gray-700' : 'hover:bg-gray-50'}`}>
                     <td className="px-4 py-3">
                       <div className="flex items-center gap-3">
-                        <div className={`w-9 h-9 rounded-xl flex items-center justify-center text-lg ${u.rol === 'admin' ? (modoOscuro ? 'bg-yellow-900' : 'bg-yellow-50') : (modoOscuro ? 'bg-gray-700' : 'bg-gray-100')}`}>
-                          {u.rol === 'admin' ? '👑' : '👤'}
+                        <div className={`w-9 h-9 rounded-xl overflow-hidden flex items-center justify-center text-lg ${u.rol === 'admin' ? (modoOscuro ? 'bg-yellow-900' : 'bg-yellow-50') : (modoOscuro ? 'bg-gray-700' : 'bg-gray-100')}`}>
+                          {u.foto_url ? (
+                            <img src={u.foto_url} alt={u.nombre} className="w-full h-full object-cover" />
+                          ) : (
+                            u.rol === 'admin' ? '👑' : '👤'
+                          )}
                         </div>
                         <div>
                           <div className={`text-sm font-semibold ${text}`}>{u.nombre}</div>
@@ -178,6 +183,14 @@ export default function AdminPage() {
           <div className={`rounded-2xl p-6 w-full max-w-md shadow-2xl animate-slide-up ${modoOscuro ? 'bg-gray-800' : 'bg-white'}`}>
             <h2 className={`text-lg font-black mb-4 ${text}`}>👤 Nuevo Usuario</h2>
             <div className="space-y-3">
+              <div className="flex justify-center mb-3">
+                      <SubirFoto
+                        fotoActual={form.foto_url}
+                        onFotoSubida={(url) => setForm({...form, foto_url: url})}
+                        label="Foto empleado"
+                        size="md"
+                      />
+                    </div>
               <input value={form.nombre} onChange={e => setForm({...form, nombre: e.target.value})} placeholder="Nombre completo" className={inputCls} />
               <input value={form.email} onChange={e => setForm({...form, email: e.target.value})} placeholder="Email" type="email" className={inputCls} />
               <input value={form.password} onChange={e => setForm({...form, password: e.target.value})} placeholder="Contraseña" type="password" className={inputCls} />

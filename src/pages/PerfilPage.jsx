@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { useAuth } from '../context/AuthContext'
 import { useTema } from '../context/TemaContext'
 import { perfilService } from '../services/api'
+import SubirFoto from '../components/SubirFoto'
 
 export default function PerfilPage() {
   const { usuario, login } = useAuth()
@@ -116,22 +117,26 @@ export default function PerfilPage() {
               />
             </div>
 
-            <div>
-              <label className={`text-xs font-bold uppercase mb-1 block ${textSub}`}>URL de foto de perfil</label>
-              <div className="flex gap-3">
-                <input
-                  value={form.foto_url}
-                  onChange={e => setForm({...form, foto_url: e.target.value})}
-                  placeholder="https://..."
-                  className={`${inputCls} flex-1`}
-                />
-                {form.foto_url && (
-                  <img src={form.foto_url} alt="preview" className="w-12 h-12 rounded-xl object-cover flex-shrink-0"
-                    onError={e => e.target.style.display='none'} />
-                )}
-              </div>
-              <p className={`text-xs mt-1 ${textSub}`}>Puedes usar una URL de imagen de internet</p>
-            </div>
+          <div>
+  <label className={`text-xs font-bold uppercase mb-2 block ${textSub}`}>Foto de perfil</label>
+  <div className="flex items-center gap-4">
+    <SubirFoto
+      fotoActual={form.foto_url}
+      onFotoSubida={(url) => setForm({...form, foto_url: url})}
+      label="Mi foto"
+      size="lg"
+    />
+    <div className="flex-1">
+      <p className={`text-xs ${textSub} mb-2`}>Sube una foto desde tu dispositivo o ingresa una URL</p>
+      <input
+        value={form.foto_url}
+        onChange={e => setForm({...form, foto_url: e.target.value})}
+        placeholder="https://... (opcional)"
+        className={inputCls}
+      />
+    </div>
+  </div>
+</div>
 
             <div>
               <label className={`text-xs font-bold uppercase mb-1 block ${textSub}`}>Email</label>

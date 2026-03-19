@@ -4,6 +4,7 @@ import { useTema } from '../context/TemaContext'
 import * as XLSX from 'xlsx'
 import { useToast } from '../components/Toast'
 import { SkeletonTable } from '../components/Skeleton'
+import SubirFoto from '../components/SubirFoto'
 
 export default function InventarioPage() {
   const { toast } = useToast()
@@ -474,13 +475,18 @@ export default function InventarioPage() {
           <div className={`rounded-2xl p-6 w-full max-w-md shadow-2xl animate-slide-up ${modoOscuro ? 'bg-gray-800' : 'bg-white'}`}>
             <h2 className={`text-lg font-black mb-4 ${text}`}>{editando ? '✏️ Editar Producto' : '📦 Nuevo Producto'}</h2>
 
-            <div className="mb-4">
-              <label className={`text-xs font-bold uppercase mb-1 block ${textSub}`}>URL de Foto</label>
-              <div className="flex gap-2 items-center">
-                <input value={form.foto_url} onChange={e => setForm({...form, foto_url: e.target.value})} placeholder="https://..." className={`${inputCls} flex-1`} />
-                {form.foto_url && <img src={form.foto_url} alt="" className="w-10 h-10 rounded-xl object-cover flex-shrink-0" onError={e => e.target.style.display='none'} />}
-              </div>
-            </div>
+            <div className="mb-4 flex items-center gap-4">
+  <SubirFoto
+    fotoActual={form.foto_url}
+    onFotoSubida={(url) => setForm({...form, foto_url: url})}
+    label="Foto producto"
+    size="md"
+  />
+  <div className="flex-1">
+    <label className={`text-xs font-bold uppercase mb-1 block ${textSub}`}>O ingresa URL</label>
+    <input value={form.foto_url} onChange={e => setForm({...form, foto_url: e.target.value})} placeholder="https://..." className={inputCls} />
+  </div>
+</div>
 
             <div className="space-y-3">
               <div className="flex gap-2 items-center">
