@@ -7,6 +7,9 @@ import { SkeletonTable } from '../components/Skeleton'
 import SubirFoto from '../components/SubirFoto'
 
 export default function InventarioPage() {
+  const [categoriaForm, setCategoriaForm] = useState({ nombre: '', emoji: '📦', color: '#3b82f6' })
+  const [modalCategoria, setModalCategoria] = useState(false)
+  const [editandoCategoria, setEditandoCategoria] = useState(null)
   const { toast } = useToast()
   const { modoOscuro } = useTema()
   const [tab, setTab] = useState('productos')
@@ -41,6 +44,7 @@ export default function InventarioPage() {
     if (tab === 'historial') cargarMovimientos()
     if (tab === 'lotes') cargarLotes()
     if (tab === 'promos') cargarPromociones()
+    if (tab === 'categorias') cargarDatos()
   }, [tab])
 
   const cargarDatos = async () => {
@@ -175,6 +179,37 @@ export default function InventarioPage() {
   const TIPO_MOV = { entrada: { color: 'text-green-500', label: '📥 Entrada' }, salida: { color: 'text-red-500', label: '📤 Salida' }, ajuste: { color: 'text-blue-500', label: '🔧 Ajuste' }, merma: { color: 'text-orange-500', label: '📉 Merma' } }
   const TIPO_PROMO = { descuento_porcentaje: '% Descuento', dos_por_uno: '2x1', pague_lleve: 'Pague/Lleve', combo: 'Combo' }
 
+  const abrirModalCategoria = (c = null) => {
+  if (c) {
+    setEditandoCategoria(c)
+    setCategoriaForm({ nombre: c.nombre, emoji: c.emoji || '📦', color: c.color || '#3b82f6' })
+  } else {
+    setEditandoCategoria(null)
+    setCategoriaForm({ nombre: '', emoji: '📦', color: '#3b82f6' })
+  }
+  setModalCategoria(true)
+}
+
+const guardarCategoria = async () => {
+  if (!categoriaForm.nombre) return alert('Nombre requerido')
+  try {
+    if (editandoCategoria) await categoriasService.actualizar(editandoCategoria.id, categoriaForm)
+    else await categoriasService.crear(categoriaForm)
+    setModalCategoria(false)
+    cargarDatos()
+    toast(editandoCategoria ? 'Categoría actualizada' : 'Categoría creada', 'exito')
+  } catch (e) { toast(e.response?.data?.error || 'Error', 'error') }
+}
+
+const eliminarCategoria = async (c) => {
+  if (!confirm(`¿Eliminar categoría "${c.nombre}"? Los productos de esta categoría quedarán sin categoría.`)) return
+  try {
+    await categoriasService.eliminar(c.id)
+    cargarDatos()
+    toast('Categoría eliminada', 'exito')
+  } catch (e) { toast(e.response?.data?.error || 'Error', 'error') }
+}
+
   return (
     <div className={`p-6 ${bg} min-h-full`}>
       {/* HEADER */}
@@ -216,6 +251,7 @@ export default function InventarioPage() {
           { id: 'historial', label: '📋 Historial' },
           { id: 'lotes', label: '🏷️ Lotes' },
           { id: 'promos', label: '🎁 Promociones' },
+          { id: 'categorias', label: '🏷️ Categorías' },
         ].map(t => (
           <button key={t.id} onClick={() => setTab(t.id)}
             className={`px-4 py-2 rounded-xl font-bold text-sm transition-all ${tab === t.id ? 'bg-blue-600 text-white shadow-md' : modoOscuro ? 'bg-gray-800 text-gray-400 border border-gray-700' : 'bg-white text-gray-500 border border-gray-200'}`}>
@@ -223,6 +259,54 @@ export default function InventarioPage() {
           </button>
         ))}
       </div>
+
+      {/* TAB CATEGORIAS */}
+{tab === 'categorias' && (
+  <div className="space-y-4">
+    <div className="flex justify-end">
+      <button onClick={() => abrirModalCategoria()}
+        className="bg-blue-600 text-white px-4 py-2 rounded-xl font-bold text-sm hover:bg-blue-700 shadow-md">
+        + Nueva Categoría
+      </button>
+    </div>
+
+    {categorias.length === 0 ? (
+      <div className={`${card} p-12 text-center`}>
+        <div className="text-4xl mb-2">🏷️</div>
+        <p className={`${textSub} mb-4`}>No hay categorías creadas</p>
+        <p className={`text-xs ${textSub}`}>Crea categorías para organizar mejor tus productos según tu negocio</p>
+      </div>
+    ) : (
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+        {categorias.map(c => (
+          <div key={c.id} className={`${card} p-5 hover:shadow-md transition-all`}>
+            <div className="flex items-center justify-between mb-3">
+              <div className="flex items-center gap-3">
+                <div className="w-12 h-12 rounded-2xl flex items-center justify-center text-2xl shadow-sm"
+                  style={{ backgroundColor: c.color + '22', border: `2px solid ${c.color}` }}>
+                  {c.emoji || '📦'}
+                </div>
+                <div>
+                  <h3 className={`font-black ${text}`}>{c.nombre}</h3>
+                  <p className={`text-xs ${textSub}`}>{c.total_productos || 0} productos</p>
+                </div>
+              </div>
+              <div className="flex gap-2">
+                <button onClick={() => abrirModalCategoria(c)}
+                  className={`p-1.5 rounded-lg ${modoOscuro ? 'hover:bg-gray-600 text-blue-400' : 'hover:bg-blue-50 text-blue-600'}`}>✏️</button>
+                <button onClick={() => eliminarCategoria(c)}
+                  className={`p-1.5 rounded-lg ${modoOscuro ? 'hover:bg-gray-600 text-red-400' : 'hover:bg-red-50 text-red-600'}`}>🗑️</button>
+              </div>
+            </div>
+            <div className="w-full h-1.5 rounded-full" style={{ backgroundColor: c.color + '33' }}>
+              <div className="h-full rounded-full" style={{ backgroundColor: c.color, width: `${Math.min(100, (c.total_productos / Math.max(1, categorias.reduce((s, x) => s + parseInt(x.total_productos || 0), 0))) * 100)}%` }}></div>
+            </div>
+          </div>
+        ))}
+      </div>
+    )}
+  </div>
+)}
 
       {/* TAB PRODUCTOS */}
       {cargando ? <SkeletonTable filas={6} modoOscuro={modoOscuro} /> : (
@@ -565,6 +649,67 @@ export default function InventarioPage() {
           </div>
         </div>
       )}
+
+{/* MODAL CATEGORIA */}
+{modalCategoria && (
+  <div className="fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center z-50 p-4">
+    <div className={`rounded-2xl p-6 w-full max-w-sm shadow-2xl animate-slide-up ${modoOscuro ? 'bg-gray-800' : 'bg-white'}`}>
+      <h2 className={`text-lg font-black mb-4 ${text}`}>{editandoCategoria ? '✏️ Editar Categoría' : '🏷️ Nueva Categoría'}</h2>
+
+      <div className="flex justify-center mb-4">
+        <div className="w-20 h-20 rounded-2xl flex items-center justify-center text-4xl shadow-md transition-all"
+          style={{ backgroundColor: categoriaForm.color + '22', border: `3px solid ${categoriaForm.color}` }}>
+          {categoriaForm.emoji}
+        </div>
+      </div>
+
+      <div className="space-y-3">
+        <div>
+          <label className={`text-xs font-bold uppercase mb-1 block ${textSub}`}>Nombre *</label>
+          <input value={categoriaForm.nombre} onChange={e => setCategoriaForm({...categoriaForm, nombre: e.target.value})}
+            placeholder="Ej: Bebidas, Ropa, Electrónica..." className={inputCls} autoFocus />
+        </div>
+
+        <div className="grid grid-cols-2 gap-3">
+          <div>
+            <label className={`text-xs font-bold uppercase mb-1 block ${textSub}`}>Emoji</label>
+            <input value={categoriaForm.emoji} onChange={e => setCategoriaForm({...categoriaForm, emoji: e.target.value})}
+              placeholder="📦" className={`${inputCls} text-center text-2xl`} maxLength={2} />
+          </div>
+          <div>
+            <label className={`text-xs font-bold uppercase mb-1 block ${textSub}`}>Color</label>
+            <div className="flex items-center gap-2">
+              <input type="color" value={categoriaForm.color} onChange={e => setCategoriaForm({...categoriaForm, color: e.target.value})}
+                className="w-10 h-10 rounded-xl border-0 cursor-pointer" />
+              <input value={categoriaForm.color} onChange={e => setCategoriaForm({...categoriaForm, color: e.target.value})}
+                placeholder="#3b82f6" className={`${inputCls} flex-1`} />
+            </div>
+          </div>
+        </div>
+
+        <div className="grid grid-cols-4 gap-2">
+          {['#3b82f6', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6', '#06b6d4', '#f97316', '#ec4899'].map(color => (
+            <button key={color} onClick={() => setCategoriaForm({...categoriaForm, color})}
+              className={`h-8 rounded-xl transition-all ${categoriaForm.color === color ? 'ring-2 ring-offset-2 ring-gray-400 scale-110' : ''}`}
+              style={{ backgroundColor: color }} />
+          ))}
+        </div>
+      </div>
+
+      <div className="flex gap-3 mt-4">
+        <button onClick={() => setModalCategoria(false)}
+          className={`flex-1 py-2 rounded-xl border text-sm font-semibold ${modoOscuro ? 'border-gray-600 text-gray-300' : 'border-gray-200 text-gray-500'}`}>
+          Cancelar
+        </button>
+        <button onClick={guardarCategoria}
+          className="flex-1 py-2 rounded-xl text-white font-bold text-sm shadow-md transition-all"
+          style={{ backgroundColor: categoriaForm.color }}>
+          {editandoCategoria ? 'Actualizar' : 'Crear Categoría'}
+        </button>
+      </div>
+    </div>
+  </div>
+)}
 
       {/* MODAL PROMOCION */}
       {modalPromo && (
