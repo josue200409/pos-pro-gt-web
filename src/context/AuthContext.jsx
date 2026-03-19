@@ -19,7 +19,10 @@ export function AuthProvider({ children }) {
   const login = async (email, password) => {
     const r = await authService.login(email, password)
     localStorage.setItem('token', r.data.token)
-    localStorage.setItem('usuario', JSON.stringify(r.data.usuario))
+localStorage.setItem('usuario', JSON.stringify(r.data.usuario))
+if (r.data.refresh_token) {
+  localStorage.setItem('refresh_token', r.data.refresh_token)
+}
     setUsuario(r.data.usuario)
     return r.data.usuario
   }
@@ -28,6 +31,7 @@ export function AuthProvider({ children }) {
     try {
       localStorage.removeItem('token')
       localStorage.removeItem('usuario')
+      localStorage.removeItem('refresh_token')
     } catch (e) {}
     setUsuario(null)
   }
