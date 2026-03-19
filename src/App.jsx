@@ -1,5 +1,6 @@
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom'
 import { TemaProvider } from './context/TemaContext'
+import { ToastProvider } from './components/Toast'
 import { AuthProvider, useAuth } from './context/AuthContext'
 import LoginPage from './pages/LoginPage'
 import DashboardPage from './pages/DashboardPage'
@@ -19,7 +20,7 @@ import TurnosPage from './pages/TurnosPage'
 import SeguridadPage from './pages/SeguridadPage'
 import IAPage from './pages/IAPage'
 import PerfilPage from './pages/PerfilPage'
-import { ToastProvider } from './components/Toast'
+import NotFoundPage from './pages/NotFoundPage'
 
 function RutaProtegida({ children, soloAdmin = false }) {
   const { usuario, cargando } = useAuth()
@@ -51,6 +52,7 @@ function AppRoutes() {
         <Route path="seguridad" element={<RutaProtegida soloAdmin><SeguridadPage /></RutaProtegida>} />
         <Route path="ia" element={<IAPage />} />
         <Route path="perfil" element={<PerfilPage />} />
+        <Route path="*" element={<NotFoundPage />} />
       </Route>
     </Routes>
   )

@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
 import { clientesService } from '../services/api'
 import { useTema } from '../context/TemaContext'
+import { useToast } from '../components/Toast'
 
 const NIVELES = {
   bronce: { color: '#cd7f32', bg: 'bg-orange-50', emoji: '🥉', label: 'Bronce', descuento: 2 },
@@ -10,6 +11,7 @@ const NIVELES = {
 }
 
 export default function ClientesPage() {
+  const { toast } = useToast()
   const { modoOscuro } = useTema()
   const [clientes, setClientes] = useState([])
   const [busqueda, setBusqueda] = useState('')
@@ -40,8 +42,9 @@ export default function ClientesPage() {
       else await clientesService.crear(form)
       setModalForm(false)
       cargarClientes()
-    } catch (e) { alert(e.response?.data?.error || 'Error') }
-  }
+      toast(editando ? 'Cliente actualizado correctamente' : 'Cliente creado correctamente', 'exito')
+    } catch (e) { toast(e.response?.data?.error || 'Error', 'error') }
+    }
 
   const eliminar = async (c) => {
     if (!confirm(`¿Eliminar "${c.nombre}"?`)) return

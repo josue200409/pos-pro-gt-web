@@ -1,8 +1,10 @@
 import { useState, useEffect } from 'react'
 import { ventasService, usuariosService } from '../services/api'
 import { useTema } from '../context/TemaContext'
+import { useToast } from '../components/Toast'
 
 export default function VentasPage() {
+  const { toast } = useToast()
   const { modoOscuro } = useTema()
   const [ventas, setVentas] = useState([])
   const [resumen, setResumen] = useState(null)
@@ -55,8 +57,9 @@ export default function VentasPage() {
     try {
       await ventasService.cancelar(venta.id, { motivo: 'Cancelada desde web' })
       cargarDatos()
-    } catch (e) { alert(e.response?.data?.error || 'Error al cancelar') }
-  }
+      toast('Venta cancelada correctamente', 'exito')
+    } catch (e) { toast(e.response?.data?.error || 'Error al cancelar', 'error') }
+    }
 
   const metodoEmoji = (m) => m === 'efectivo' ? '💵' : m === 'tarjeta' ? '💳' : '📱'
   const metodoColor = (m) => m === 'efectivo' ? 'text-green-500' : m === 'tarjeta' ? 'text-blue-500' : 'text-purple-500'

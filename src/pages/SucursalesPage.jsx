@@ -1,8 +1,10 @@
 import { useState, useEffect } from 'react'
 import { sucursalesService } from '../services/api'
 import { useTema } from '../context/TemaContext'
+import { useToast } from '../components/Toast'
 
 export default function SucursalesPage() {
+  const { toast } = useToast()
   const { modoOscuro } = useTema()
   const [sucursales, setSucursales] = useState([])
   const [modalForm, setModalForm] = useState(false)
@@ -35,7 +37,8 @@ export default function SucursalesPage() {
       else await sucursalesService.crear(form)
       setModalForm(false)
       cargarSucursales()
-    } catch (e) { alert(e.response?.data?.error || 'Error') }
+      toast(editando ? 'Sucursal actualizada' : 'Sucursal creada correctamente', 'exito')
+    } catch (e) { toast(e.response?.data?.error || 'Error', 'error') }
   }
 
   const eliminar = async (s) => {

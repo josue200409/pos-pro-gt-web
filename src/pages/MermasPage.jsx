@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
 import { productosService } from '../services/api'
 import { useTema } from '../context/TemaContext'
+import { useToast } from '../components/Toast'
 
 const BASE_URL = 'https://pos-pro-gt-backend.onrender.com/api'
 
@@ -19,6 +20,7 @@ const TIPOS = [
 ]
 
 export default function MermasPage() {
+  const { toast } = useToast()
   const { modoOscuro } = useTema()
   const [vista, setVista] = useState('registro')
   const [productos, setProductos] = useState([])
@@ -74,11 +76,11 @@ export default function MermasPage() {
     try {
       const res = await apiMermas('', 'POST', { producto_id: productoSel.id, tipo, cantidad: parseFloat(cantidad), motivo })
       if (res.ok) {
-        alert(`Merma registrada: ${cantidad} unidades de ${productoSel.nombre}`)
+        toast(`Merma registrada: ${cantidad} uds de ${productoSel.nombre}`, 'exito')
         setProductoSel(null); setCantidad(''); setMotivo('')
         cargarProductos()
-      } else alert(res.error || 'Error')
-    } catch { alert('Error de conexión') }
+      } else toast(res.error || 'Error al registrar', 'error')
+    } catch { toast('Error de conexión', 'error') }
     setCargando(false)
   }
 

@@ -1,8 +1,10 @@
 import { useState, useEffect } from 'react'
 import { cajaService } from '../services/api'
 import { useTema } from '../context/TemaContext'
+import { useToast } from '../components/Toast'
 
 export default function CajaPage() {
+  const { toast } = useToast()
   const { modoOscuro } = useTema()
   const [datos, setDatos] = useState(null)
   const [cargando, setCargando] = useState(true)
@@ -41,7 +43,8 @@ export default function CajaPage() {
       setModalApertura(false)
       setEfectivoInicial('')
       cargarDatos()
-    } catch (e) { alert(e.response?.data?.error || 'Error') }
+      toast('Caja abierta correctamente', 'exito')
+    } catch (e) { toast(e.response?.data?.error || 'Error', 'error') }
   }
 
   const cerrarCaja = async () => {
@@ -51,6 +54,7 @@ export default function CajaPage() {
       setModalCierre(false)
       setEfectivoContado('')
       cargarDatos()
+      toast('Caja cerrada correctamente', 'exito')
     } catch (e) { alert(e.response?.data?.error || 'Error') }
   }
 
@@ -61,7 +65,8 @@ export default function CajaPage() {
       setModalGasto(false)
       setGastoDesc(''); setGastoMonto('')
       cargarDatos()
-    } catch { alert('Error al registrar gasto') }
+      toast('Gasto registrado correctamente', 'exito')
+    } catch { toast('Error al registrar gasto', 'error') }
   }
 
   const eliminarGasto = async (id, desc) => {

@@ -2,8 +2,10 @@ import { useState, useEffect } from 'react'
 import { dashboardService, monitorService } from '../services/api'
 import { useTema } from '../context/TemaContext'
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, BarChart, Bar } from 'recharts'
+import { useToast } from '../components/Toast'
 
 export default function DashboardPage() {
+  const { toast } = useToast()
   const { modoOscuro } = useTema()
   const [datos, setDatos] = useState(null)
   const [stats, setStats] = useState(null)
@@ -12,16 +14,30 @@ export default function DashboardPage() {
   useEffect(() => { cargarDatos() }, [])
 
   const cargarDatos = async () => {
-    try {
-      const [dash, mon] = await Promise.all([
-        dashboardService.obtener(),
-        monitorService.stats()
-      ])
-      setDatos(dash.data)
-      setStats(mon.data)
-    } catch (e) { console.log('Error:', e) }
-    setCargando(false)
-  }
+  try {
+    const [dash, mon] = await Promise.all([
+      dashboardService.obtener(),
+      monitorService.stats()
+    ])
+    setDatos(dash.data)
+    setStats(mon.data)
+
+    // Notificaciones automáticas de stock bajo
+    const stockBajo = dash.data?.stock_bajo || []
+    const agotados = stockBajo.filter(p => p.stock === 0)
+    const bajos = stockBajo.filter(p => p.stock > 0)
+
+    if (agotados.length > 0) {
+      toast(`🚨 ${agotados.length} producto(s) agotado(s)`, 'error')
+    }
+    if (bajos.length > 0) {
+      setTimeout(() => {
+        toast(`⚠️ ${bajos.length} producto(s) con stock bajo`, 'advertencia')
+      }, 1000)
+    }
+  } catch (e) { console.log('Error:', e) }
+  setCargando(false)
+}
 
   const card = `rounded-2xl p-5 border ${modoOscuro ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-100'} shadow-sm hover:shadow-md transition-all duration-200`
 

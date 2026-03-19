@@ -1,8 +1,10 @@
 import { useState, useEffect } from 'react'
 import { proveedoresService } from '../services/api'
 import { useTema } from '../context/TemaContext'
+import { useToast } from '../components/Toast'
 
 export default function ProveedoresPage() {
+  const { toast } = useToast()
   const { modoOscuro } = useTema()
   const [proveedores, setProveedores] = useState([])
   const [busqueda, setBusqueda] = useState('')
@@ -33,7 +35,8 @@ export default function ProveedoresPage() {
       else await proveedoresService.crear(form)
       setModalForm(false)
       cargarProveedores()
-    } catch (e) { alert(e.response?.data?.error || 'Error') }
+      toast(editando ? 'Proveedor actualizado' : 'Proveedor creado correctamente', 'exito')
+    } catch (e) { toast(e.response?.data?.error || 'Error', 'error') }
   }
 
   const eliminar = async (p) => {

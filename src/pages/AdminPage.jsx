@@ -1,8 +1,10 @@
 import { useState, useEffect } from 'react'
 import { usuariosService, configuracionService } from '../services/api'
 import { useTema } from '../context/TemaContext'
+import { useToast } from '../components/Toast'
 
 export default function AdminPage() {
+  const { toast } = useToast()
   const { modoOscuro } = useTema()
   const [usuarios, setUsuarios] = useState([])
   const [config, setConfig] = useState({})
@@ -31,8 +33,9 @@ export default function AdminPage() {
       setModalUsuario(false)
       setForm({ nombre: '', email: '', password: '', rol: 'empleado' })
       cargarDatos()
-    } catch (e) { alert(e.response?.data?.error || 'Error') }
-  }
+      toast('Usuario creado correctamente', 'exito')
+    } catch (e) { toast(e.response?.data?.error || 'Error', 'error') }
+    }
 
   const toggleActivo = async (u) => {
     await usuariosService.toggleActivo(u.id)
@@ -49,8 +52,8 @@ export default function AdminPage() {
     setGuardandoConfig(true)
     try {
       await configuracionService.actualizar(config)
-      alert('✅ Configuración guardada')
-    } catch { alert('Error al guardar') }
+      toast('Configuración guardada correctamente', 'exito')
+    } catch { toast('Error al guardar configuración', 'error') }
     setGuardandoConfig(false)
   }
 
