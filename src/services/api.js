@@ -76,6 +76,7 @@ export const cajaService = {
   abrir: (data) => api.post('/caja/abrir', data),
   cerrar: (data) => api.post('/caja/cerrar', data),
   agregarGasto: (data) => api.post('/caja/gasto', data),
+  eliminarGasto: (id) => api.delete(`/caja/gasto/${id}`),
   historial: () => api.get('/caja/historial'),
 }
 
@@ -95,6 +96,7 @@ export const sucursalesService = {
   crear: (data) => api.post('/sucursales', data),
   actualizar: (id, data) => api.put(`/sucursales/${id}`, data),
   eliminar: (id) => api.delete(`/sucursales/${id}`),
+  reporte: (id, desde, hasta) => api.get(`/sucursales/${id}/reporte?desde=${desde}&hasta=${hasta}`),
 }
 
 export const monitorService = {

@@ -1,7 +1,13 @@
 import { useState, useEffect, useRef } from 'react'
 import { dashboardService } from '../services/api'
+import { useTema } from '../context/TemaContext'
 
 export default function IAPage() {
+    const { modoOscuro } = useTema()
+  const bg = modoOscuro ? 'bg-gray-900' : 'bg-gray-50'
+  const card = `rounded-2xl border ${modoOscuro ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-100'}`
+  const text = modoOscuro ? 'text-white' : 'text-gray-800'
+  const textSub = modoOscuro ? 'text-gray-400' : 'text-gray-500'
   const [mensajes, setMensajes] = useState([{
     id: 1, rol: 'bot',
     texto: '¡Hola! 👋 Soy tu asistente IA del negocio.\n\nPuedo ayudarte con:\n• 💰 Ventas del día\n• 📦 Estado del inventario\n• 📈 Márgenes de ganancia\n• 🏆 Productos más vendidos\n• 🛒 Qué comprar pronto\n\n¿En qué te puedo ayudar?'
@@ -87,12 +93,12 @@ export default function IAPage() {
   ]
 
   return (
-    <div className="flex flex-col h-full p-6">
+    <div className={`flex flex-col h-full p-6 ${bg}`}>
       <div className="flex items-center gap-3 mb-6">
         <div className="w-12 h-12 rounded-2xl bg-blue-600 flex items-center justify-center text-2xl">🧠</div>
         <div>
-          <h1 className="text-2xl font-black text-gray-800">Asistente IA</h1>
-          <p className="text-sm text-gray-400">Analiza tu negocio con inteligencia artificial</p>
+          <h1 className={`text-2xl font-black ${text}`}>Asistente IA</h1>
+          <p className={`text-sm ${textSub}`}>Analiza tu negocio con inteligencia artificial</p>
         </div>
         <button onClick={cargarDatos} className="ml-auto text-xs text-blue-600 font-bold bg-blue-50 px-3 py-2 rounded-xl hover:bg-blue-100">
           🔄 Actualizar datos
@@ -100,7 +106,7 @@ export default function IAPage() {
       </div>
 
       {/* CHAT */}
-      <div className="flex-1 bg-white rounded-2xl border border-gray-200 flex flex-col overflow-hidden">
+      <div className={`flex-1 ${card} flex flex-col overflow-hidden`}>
         <div ref={scrollRef} className="flex-1 overflow-y-auto p-4 space-y-4">
           {mensajes.map(m => (
             <div key={m.id} className={`flex ${m.rol === 'user' ? 'justify-end' : 'justify-start'}`}>
@@ -110,7 +116,7 @@ export default function IAPage() {
               <div className={`max-w-xs md:max-w-md lg:max-w-lg px-4 py-3 rounded-2xl text-sm whitespace-pre-wrap ${
                 m.rol === 'user'
                   ? 'bg-blue-600 text-white rounded-br-sm'
-                  : 'bg-gray-100 text-gray-800 rounded-bl-sm'
+                  : modoOscuro ? 'bg-gray-700 text-gray-200 rounded-bl-sm' : 'bg-gray-100 text-gray-800 rounded-bl-sm'
               }`}>
                 {m.texto}
               </div>
@@ -131,13 +137,13 @@ export default function IAPage() {
         </div>
 
         {/* SUGERENCIAS */}
-        <div className="px-4 py-2 border-t border-gray-100">
+        <div className={`px-4 py-2 border-t ${modoOscuro ? 'border-gray-700' : 'border-gray-100'}`}>
           <div className="flex gap-2 overflow-x-auto pb-1">
             {SUGERENCIAS.map(s => (
               <button
                 key={s}
                 onClick={() => { setInput(s); inputRef.current?.focus() }}
-                className="whitespace-nowrap text-xs bg-blue-50 text-blue-600 px-3 py-1.5 rounded-full hover:bg-blue-100 transition-all font-medium flex-shrink-0"
+                className={`whitespace-nowrap text-xs px-3 py-1.5 rounded-full transition-all font-medium flex-shrink-0 ${modoOscuro ? 'bg-gray-700 text-blue-400 hover:bg-gray-600' : 'bg-blue-50 text-blue-600 hover:bg-blue-100'}`}
               >
                 {s}
               </button>
@@ -146,7 +152,7 @@ export default function IAPage() {
         </div>
 
         {/* INPUT */}
-        <div className="p-4 border-t border-gray-200">
+        <div className={`p-4 border-t ${modoOscuro ? 'border-gray-700' : 'border-gray-200'}`}>
           <div className="flex gap-3">
             <input
               ref={inputRef}
@@ -154,7 +160,7 @@ export default function IAPage() {
               onChange={e => setInput(e.target.value)}
               onKeyDown={e => e.key === 'Enter' && enviar()}
               placeholder="Escribe tu pregunta..."
-              className="flex-1 px-4 py-3 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
+              className={`flex-1 px-4 py-3 rounded-xl border focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm ${modoOscuro ? 'bg-gray-700 border-gray-600 text-white placeholder-gray-400' : 'border-gray-200'}`}
               disabled={cargando}
             />
             <button

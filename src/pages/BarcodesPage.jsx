@@ -1,8 +1,14 @@
 import { useState, useEffect, useRef } from 'react'
 import { productosService } from '../services/api'
 import JsBarcode from 'jsbarcode'
+import { useTema } from '../context/TemaContext'
 
 export default function BarcodesPage() {
+  const { modoOscuro } = useTema()
+  const bg = modoOscuro ? 'bg-gray-900' : 'bg-gray-50'
+  const card = `rounded-2xl border ${modoOscuro ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-100'}`
+  const text = modoOscuro ? 'text-white' : 'text-gray-800'
+  const textSub = modoOscuro ? 'text-gray-400' : 'text-gray-500'
   const [productos, setProductos] = useState([])
   const [busqueda, setBusqueda] = useState('')
   const [seleccionados, setSeleccionados] = useState([])
@@ -98,9 +104,9 @@ export default function BarcodesPage() {
   }
 
   return (
-    <div className="p-6">
+    <div className={`p-6 ${bg} min-h-full`}>
       <div className="flex items-center justify-between mb-6">
-        <h1 className="text-2xl font-black text-gray-800">📷 Códigos de Barras</h1>
+        <h1 className={`text-2xl font-black ${text}`}>📷 Códigos de Barras</h1>
         <div className="flex gap-2">
           <button onClick={seleccionarTodos} className="bg-gray-100 text-gray-600 px-4 py-2 rounded-xl font-bold text-sm hover:bg-gray-200">
             Seleccionar todos
@@ -116,14 +122,14 @@ export default function BarcodesPage() {
         </div>
       </div>
 
-      <div className="bg-white rounded-2xl border border-gray-200 p-4 mb-4">
+      <div className={`${card} p-4 mb-4`}>
         <input
           value={busqueda}
           onChange={e => setBusqueda(e.target.value)}
           placeholder="Buscar producto o código..."
-          className="w-full px-4 py-2 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
+          className={`w-full px-4 py-2 rounded-xl border focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm ${modoOscuro ? 'bg-gray-700 border-gray-600 text-white placeholder-gray-400' : 'border-gray-200'}`}
         />
-        <p className="text-xs text-gray-400 mt-2">{productosFiltrados.length} productos — {seleccionados.length} seleccionados</p>
+        <p className={`text-xs mt-2 ${textSub}`}>{productosFiltrados.length} productos — {seleccionados.length} seleccionados</p>
       </div>
 
       <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3">
@@ -133,13 +139,13 @@ export default function BarcodesPage() {
             <div
               key={p.id}
               onClick={() => toggleSeleccionado(p)}
-              className={`bg-white rounded-xl border-2 p-3 cursor-pointer transition-all hover:shadow-md ${estaSeleccionado ? 'border-blue-500 bg-blue-50' : 'border-gray-200'}`}
+              className={`rounded-xl border-2 p-3 cursor-pointer transition-all hover:shadow-md ${estaSeleccionado ? 'border-blue-500 bg-blue-900' : modoOscuro ? 'border-gray-700 bg-gray-800 hover:border-gray-500' : 'border-gray-200 bg-white'}`}
             >
               <div className="flex items-center justify-between mb-2">
                 <span className="text-lg">{p.emoji || '📦'}</span>
                 {estaSeleccionado && <span className="text-blue-500 text-lg">✓</span>}
               </div>
-              <p className="text-xs font-bold text-gray-800 line-clamp-2 mb-1">{p.nombre}</p>
+              <p className={`text-xs font-bold line-clamp-2 mb-1 ${text}`}>{p.nombre}</p>
               <p className="text-sm font-black text-blue-600">Q{parseFloat(p.precio).toFixed(2)}</p>
               {p.codigo_barras ? (
                 <p className="text-xs text-gray-400 mt-1 truncate">{p.codigo_barras}</p>

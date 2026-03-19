@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react'
 import { usuariosService } from '../services/api'
+import { useTema } from '../context/TemaContext'
 
 const TURNOS = {
   mañana: { label: 'Mañana', emoji: '🌅', hora: '07:00 - 14:00', color: '#f59e0b', bg: 'bg-yellow-50 border-yellow-200' },
@@ -29,6 +30,11 @@ function fechaKey(fecha) {
 }
 
 export default function TurnosPage() {
+  const { modoOscuro } = useTema()
+  const bg = modoOscuro ? 'bg-gray-900' : 'bg-gray-50'
+  const card = `rounded-2xl border ${modoOscuro ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-100'}`
+  const text = modoOscuro ? 'text-white' : 'text-gray-800'
+  const textSub = modoOscuro ? 'text-gray-400' : 'text-gray-500'
   const [empleados, setEmpleados] = useState([])
   const [asignaciones, setAsignaciones] = useState({})
   const [semanaOffset, setSemanaOffset] = useState(0)
@@ -79,8 +85,8 @@ export default function TurnosPage() {
   const formatFecha = (fecha) => new Date(fecha).toLocaleDateString('es-GT', { day: '2-digit', month: 'short' })
 
   return (
-    <div className="p-6">
-      <h1 className="text-2xl font-black text-gray-800 mb-6">👥 Turnos de Empleados</h1>
+    <div className={`p-6 ${bg} min-h-full`}>
+     <h1 className={`text-2xl font-black mb-6 ${text}`}>👥 Turnos de Empleados</h1>
 
       {/* TABS */}
       <div className="flex gap-2 mb-6">
@@ -108,7 +114,7 @@ export default function TurnosPage() {
               { label: 'Turno Tarde', val: empleadosHoy.filter(e => e.turno === 'tarde').length, color: 'text-indigo-600' },
               { label: 'Sin Turno', val: empleadosHoy.filter(e => !e.turno).length, color: 'text-gray-400' },
             ].map(({ label, val, color }) => (
-              <div key={label} className="bg-white rounded-2xl border border-gray-200 p-4 text-center">
+              <div key={label} className={`${card} p-4 text-center`}>
                 <div className={`text-2xl font-black ${color}`}>{val}</div>
                 <div className="text-xs text-gray-400 mt-1">{label}</div>
               </div>
@@ -156,10 +162,10 @@ export default function TurnosPage() {
             <button onClick={() => setSemanaOffset(s => s + 1)} className="bg-gray-100 px-3 py-2 rounded-xl font-bold hover:bg-gray-200">▶</button>
           </div>
 
-          <div className="bg-white rounded-2xl border border-gray-200 overflow-hidden">
+          <div className={`${card} p-4 text-center`}>
             <div className="overflow-x-auto">
               <table className="w-full">
-                <thead className="bg-gray-50">
+                <thead className={modoOscuro ? 'bg-gray-700' : 'bg-gray-50'}>
                   <tr>
                     <th className="px-4 py-3 text-left text-xs font-bold text-gray-500 uppercase w-32">Empleado</th>
                     {diasSemana.map((dia, i) => {
@@ -175,7 +181,7 @@ export default function TurnosPage() {
                 </thead>
                 <tbody className="divide-y divide-gray-100">
                   {empleados.map(emp => (
-                    <tr key={emp.id} className="hover:bg-gray-50">
+                    <tr key={emp.id} className={modoOscuro ? 'hover:bg-gray-700' : 'hover:bg-gray-50'}>
                       <td className="px-4 py-3">
                         <div className="flex items-center gap-2">
                           <span className="text-lg">{emp.avatar}</span>
@@ -201,9 +207,9 @@ export default function TurnosPage() {
               </table>
             </div>
 
-            <div className="p-3 bg-gray-50 border-t border-gray-200 flex gap-4">
+            <div className={`p-3 border-t flex gap-4 ${modoOscuro ? 'bg-gray-700 border-gray-600' : 'bg-gray-50 border-gray-200'}`}>
               {Object.entries(TURNOS).map(([key, t]) => (
-                <div key={key} className="flex items-center gap-2 text-xs text-gray-500">
+                <div key={key} className={`flex items-center gap-2 text-xs ${textSub}`}>
                   <span>{t.emoji}</span>
                   <span>{t.label} ({t.hora})</span>
                 </div>
@@ -224,10 +230,10 @@ export default function TurnosPage() {
             <button onClick={() => setSemanaOffset(s => s + 1)} className="bg-gray-100 px-3 py-2 rounded-xl font-bold hover:bg-gray-200">▶</button>
           </div>
 
-          <div className="bg-white rounded-2xl border border-gray-200 overflow-hidden">
+          <div className={`${card} overflow-hidden`}>
             <div className="overflow-x-auto">
               <table className="w-full">
-                <thead className="bg-gray-50">
+                <thead className={modoOscuro ? 'bg-gray-700' : 'bg-gray-50'}>
                   <tr>
                     <th className="px-4 py-3 text-left text-xs font-bold text-gray-500 uppercase w-32">Empleado</th>
                     {diasSemana.map((dia, i) => (
@@ -240,7 +246,7 @@ export default function TurnosPage() {
                 </thead>
                 <tbody className="divide-y divide-gray-100">
                   {empleados.map(emp => (
-                    <tr key={emp.id} className="hover:bg-gray-50">
+                    <tr key={emp.id} className={modoOscuro ? 'hover:bg-gray-700' : 'hover:bg-gray-50'}>
                       <td className="px-4 py-3">
                         <div className="flex items-center gap-2">
                           <span className="text-lg">{emp.avatar}</span>

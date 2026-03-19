@@ -1,9 +1,16 @@
 import { useState, useEffect } from 'react'
 import { monitorService } from '../services/api'
+import { useTema } from '../context/TemaContext'
 
 const BASE_URL = 'https://pos-pro-gt-backend.onrender.com/api'
 
 async function apiSeguridad(endpoint, method = 'GET', body = null) {
+const { modoOscuro } = useTema()
+const bg = modoOscuro ? 'bg-gray-900' : 'bg-gray-50'
+const card = `rounded-2xl border ${modoOscuro ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-100'}`
+const text = modoOscuro ? 'text-white' : 'text-gray-800'
+const textSub = modoOscuro ? 'text-gray-400' : 'text-gray-500'
+const inputCls = `flex-1 px-3 py-2 rounded-xl border focus:outline-none text-sm ${modoOscuro ? 'bg-gray-700 border-gray-600 text-white placeholder-gray-400' : 'border-gray-200'}`
   const token = localStorage.getItem('token')
   const config = {
     method,
@@ -124,8 +131,8 @@ export default function SeguridadPage() {
     : actividad
 
   return (
-    <div className="p-6">
-      <h1 className="text-2xl font-black text-gray-800 mb-6">🔒 Seguridad</h1>
+    <div className={`p-6 ${bg} min-h-full`}>
+      <h1 className={`text-2xl font-black mb-6 ${text}`}>🔒 Seguridad</h1>
 
       {/* TABS */}
       <div className="flex gap-2 mb-6 flex-wrap">
@@ -147,13 +154,13 @@ export default function SeguridadPage() {
 
       {/* ACTIVIDAD */}
       {vista === 'actividad' && (
-        <div className="bg-white rounded-2xl border border-gray-200 overflow-hidden">
+        <div className={`${card} overflow-hidden`}>
           <div className="p-4 border-b border-gray-200 flex items-center justify-between gap-3">
             <input
               value={filtroAccion}
               onChange={e => setFiltroAccion(e.target.value)}
               placeholder="Filtrar por acción..."
-              className="flex-1 px-3 py-2 rounded-xl border border-gray-200 focus:outline-none text-sm"
+              className={inputCls}
             />
             <button onClick={cargarActividad} className="text-sm text-blue-600 font-bold whitespace-nowrap">🔄 Actualizar</button>
           </div>
@@ -162,7 +169,7 @@ export default function SeguridadPage() {
           ) : (
             <div className="overflow-x-auto">
               <table className="w-full">
-                <thead className="bg-gray-50 text-xs font-bold text-gray-500 uppercase">
+                <thead className={`text-xs font-bold uppercase ${modoOscuro ? 'bg-gray-700 text-gray-400' : 'bg-gray-50 text-gray-500'}`}>
                   <tr>
                     <th className="px-4 py-3 text-left">Usuario</th>
                     <th className="px-4 py-3 text-left">Acción</th>
@@ -171,9 +178,9 @@ export default function SeguridadPage() {
                     <th className="px-4 py-3 text-left">Fecha</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-gray-100">
+                <tbody className={`divide-y ${modoOscuro ? 'divide-gray-700' : 'divide-gray-100'}`}>
                   {actividadFiltrada.slice(0, 50).map(a => (
-                    <tr key={a.id} className="hover:bg-gray-50">
+                    <tr key={a.id} className={modoOscuro ? 'hover:bg-gray-700' : 'hover:bg-gray-50'}>
                       <td className="px-4 py-3 text-sm font-semibold text-gray-800">{a.nombre_usuario || 'N/A'}</td>
                       <td className="px-4 py-3">
                         <span className={`text-xs font-bold px-2 py-1 rounded-full ${colorAccion(a.accion)}`}>{a.accion}</span>
@@ -193,9 +200,9 @@ export default function SeguridadPage() {
       {/* ALERTAS */}
       {vista === 'alertas' && (
         <div className="space-y-4">
-          <div className="bg-white rounded-2xl border border-gray-200 overflow-hidden">
+          <div className={`${card} overflow-hidden`}>
             <div className="p-4 border-b border-gray-200 flex items-center justify-between">
-              <h2 className="font-bold text-gray-700">🔴 Cuentas Bloqueadas</h2>
+              <h2 className={`font-bold ${text}`}>🔴 Cuentas Bloqueadas</h2>
               <button onClick={cargarBloqueados} className="text-sm text-blue-600 font-bold">🔄 Actualizar</button>
             </div>
             {bloqueados.length === 0 ? (
@@ -205,7 +212,7 @@ export default function SeguridadPage() {
               </div>
             ) : (
               <table className="w-full">
-                <thead className="bg-gray-50 text-xs font-bold text-gray-500 uppercase">
+                <thead className={`text-xs font-bold uppercase ${modoOscuro ? 'bg-gray-700 text-gray-400' : 'bg-gray-50 text-gray-500'}`}>
                   <tr>
                     <th className="px-4 py-3 text-left">Email</th>
                     <th className="px-4 py-3 text-center">Intentos</th>
@@ -213,9 +220,9 @@ export default function SeguridadPage() {
                     <th className="px-4 py-3 text-center">Acción</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-gray-100">
+                <tbody className={`divide-y ${modoOscuro ? 'divide-gray-700' : 'divide-gray-100'}`}>
                   {bloqueados.map(b => (
-                    <tr key={b.id} className="hover:bg-gray-50">
+                    <tr key={b.id} className={modoOscuro ? 'hover:bg-gray-700' : 'hover:bg-gray-50'}>
                       <td className="px-4 py-3 text-sm font-semibold text-gray-800">{b.email}</td>
                       <td className="px-4 py-3 text-center">
                         <span className="bg-red-100 text-red-600 text-xs font-bold px-2 py-1 rounded-full">{b.intentos}</span>
@@ -238,13 +245,13 @@ export default function SeguridadPage() {
       {/* BACKUP */}
       {vista === 'backup' && (
         <div className="space-y-4">
-          <div className="bg-indigo-50 border border-indigo-200 rounded-2xl p-4">
-            <h3 className="font-bold text-indigo-800 mb-1">⏰ Backup automático</h3>
-            <p className="text-sm text-indigo-600">El sistema genera un backup automático cada día a las 2:00 AM y lo envía al email configurado en el servidor.</p>
+          <div className={`rounded-2xl p-4 ${modoOscuro ? 'bg-indigo-900 border border-indigo-700' : 'bg-indigo-50 border border-indigo-200'}`}>
+            <h3 className={`font-bold mb-1 ${modoOscuro ? 'text-indigo-300' : 'text-indigo-800'}`}>⏰ Backup automático</h3>
+            <p className={`text-sm ${modoOscuro ? 'text-indigo-400' : 'text-indigo-600'}`}>El sistema genera un backup automático cada día a las 2:00 AM y lo envía al email configurado en el servidor.</p>
           </div>
 
-          <div className="bg-white rounded-2xl border border-gray-200 p-5">
-            <h3 className="font-bold text-gray-700 mb-4">Backup Manual</h3>
+          <div className={`${card} p-5`}>
+            <h3 className={`font-bold mb-4 ${text}`}>Backup Manual</h3>
             <div className="flex gap-3">
               <button
                 onClick={descargarBackup}
@@ -262,13 +269,13 @@ export default function SeguridadPage() {
             </div>
           </div>
 
-          <div className="bg-white rounded-2xl border border-gray-200 overflow-hidden">
+          <div className={`${card} overflow-hidden`}>
             <div className="p-4 border-b border-gray-200 font-bold text-gray-700">Historial de Backups</div>
             {historialBackup.length === 0 ? (
               <div className="p-8 text-center text-gray-400">Sin backups registrados</div>
             ) : (
               <table className="w-full">
-                <thead className="bg-gray-50 text-xs font-bold text-gray-500 uppercase">
+                <thead className={`text-xs font-bold uppercase ${modoOscuro ? 'bg-gray-700 text-gray-400' : 'bg-gray-50 text-gray-500'}`}>
                   <tr>
                     <th className="px-4 py-3 text-left">Tipo</th>
                     <th className="px-4 py-3 text-center">Registros</th>
@@ -276,9 +283,9 @@ export default function SeguridadPage() {
                     <th className="px-4 py-3 text-left">Fecha</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-gray-100">
+                <tbody className={`divide-y ${modoOscuro ? 'divide-gray-700' : 'divide-gray-100'}`}>
                   {historialBackup.map(b => (
-                    <tr key={b.id} className="hover:bg-gray-50">
+                    <tr key={b.id} className={modoOscuro ? 'hover:bg-gray-700' : 'hover:bg-gray-50'}>
                       <td className="px-4 py-3">
                         <span className={`text-xs font-bold px-2 py-1 rounded-full ${b.tipo === 'automatico' ? 'bg-blue-100 text-blue-600' : 'bg-green-100 text-green-600'}`}>
                           {b.tipo === 'automatico' ? '⏰ Automático' : '👤 Manual'}
@@ -310,8 +317,8 @@ export default function SeguridadPage() {
           </button>
 
           {healthData && (
-            <div className="bg-white rounded-2xl border border-gray-200 p-5">
-              <h3 className="font-bold text-gray-700 mb-4">🖥️ Estado del Servidor</h3>
+            <div className={`${card} p-5`}>
+              <h3 className={`font-bold mb-4 ${text}`}>🖥️ Estado del Servidor</h3>
               <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
                 {[
                   { label: 'Estado', val: healthData.status === 'ok' ? '✅ Funcionando' : '❌ Error', color: healthData.status === 'ok' ? 'text-green-600' : 'text-red-600' },
@@ -321,8 +328,8 @@ export default function SeguridadPage() {
                   { label: 'Uptime', val: healthData.uptime },
                   { label: 'Node.js', val: healthData.node },
                 ].map(({ label, val, color }) => (
-                  <div key={label} className="bg-gray-50 rounded-xl p-3">
-                    <div className="text-xs text-gray-400 mb-1">{label}</div>
+                  <div key={label} className={`rounded-xl p-3 ${modoOscuro ? 'bg-gray-700' : 'bg-gray-50'}`}>
+                    <div className={`text-xs mb-1 ${textSub}`}>{label}</div>
                     <div className={`text-sm font-bold ${color || 'text-gray-800'}`}>{val}</div>
                   </div>
                 ))}
@@ -331,8 +338,8 @@ export default function SeguridadPage() {
           )}
 
           {statsData && (
-            <div className="bg-white rounded-2xl border border-gray-200 p-5">
-              <h3 className="font-bold text-gray-700 mb-4">📊 Estadísticas</h3>
+            <div className={`${card} p-5`}>
+              <h3 className={`font-bold mb-4 ${text}`}>📊 Estadísticas</h3>
               <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                 {[
                   { label: 'Ventas hoy', val: statsData.hoy?.ventas, color: 'text-blue-600' },
@@ -361,14 +368,14 @@ export default function SeguridadPage() {
       {/* MODAL EMAIL */}
       {modalEmail && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-2xl p-6 w-full max-w-sm">
-            <h2 className="text-lg font-black mb-4">📧 Enviar Backup por Email</h2>
+          <div className={`rounded-2xl p-6 w-full max-w-sm ${modoOscuro ? 'bg-gray-800' : 'bg-white'}`}>
+            <h2 className={`text-lg font-black mb-4 ${text}`}>📧 Enviar Backup por Email</h2>
             <input
               value={emailBackup}
               onChange={e => setEmailBackup(e.target.value)}
               placeholder="correo@ejemplo.com"
               type="email"
-              className="w-full px-3 py-2 rounded-xl border border-gray-200 focus:outline-none text-sm mb-4"
+              className={`w-full px-3 py-2 rounded-xl border focus:outline-none text-sm mb-4 ${modoOscuro ? 'bg-gray-700 border-gray-600 text-white' : 'border-gray-200'}`}
               autoFocus
             />
             <div className="flex gap-3">
