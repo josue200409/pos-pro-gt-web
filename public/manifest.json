@@ -1,0 +1,20 @@
+{
+  "name": "POS Pro GT",
+  "short_name": "POS Pro GT",
+  "description": "Sistema de Punto de Venta gratuito para emprendedores guatemaltecos",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#1d4ed8",
+  "theme_color": "#1d4ed8",
+  "orientation": "portrait-primary",
+  "icons": [
+    {
+      "src": "/favicon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ],
+  "categories": ["business", "productivity"],
+  "lang": "es-GT"
+}
