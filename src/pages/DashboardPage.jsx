@@ -3,6 +3,7 @@ import { dashboardService, monitorService } from '../services/api'
 import { useTema } from '../context/TemaContext'
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, BarChart, Bar } from 'recharts'
 import { useToast } from '../components/Toast'
+import { SkeletonDashboard } from '../components/Skeleton'
 
 export default function DashboardPage() {
   const { toast } = useToast()
@@ -41,14 +42,7 @@ export default function DashboardPage() {
 
   const card = `rounded-2xl p-5 border ${modoOscuro ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-100'} shadow-sm hover:shadow-md transition-all duration-200`
 
-  if (cargando) return (
-    <div className="flex items-center justify-center h-full min-h-96">
-      <div className="text-center animate-fade-in">
-        <div className="text-5xl mb-4 animate-bounce">📊</div>
-        <p className={`text-sm ${modoOscuro ? 'text-gray-400' : 'text-gray-500'}`}>Cargando dashboard...</p>
-      </div>
-    </div>
-  )
+  if (cargando) return <SkeletonDashboard modoOscuro={modoOscuro} />
 
   const hoy = datos?.hoy || {}
   const topProductos = datos?.top_productos || []

@@ -3,6 +3,7 @@ import { productosService, categoriasService, inventarioService } from '../servi
 import { useTema } from '../context/TemaContext'
 import * as XLSX from 'xlsx'
 import { useToast } from '../components/Toast'
+import { SkeletonTable } from '../components/Skeleton'
 
 export default function InventarioPage() {
   const { toast } = useToast()
@@ -223,6 +224,11 @@ export default function InventarioPage() {
       </div>
 
       {/* TAB PRODUCTOS */}
+      {cargando ? <SkeletonTable filas={6} modoOscuro={modoOscuro} /> : (
+  <div className={`${card} overflow-hidden`}>
+    ...tabla...
+  </div>
+)}
       {tab === 'productos' && (
         <>
           <div className={`${card} p-4 mb-4`}>
