@@ -21,6 +21,7 @@ import SeguridadPage from './pages/SeguridadPage'
 import IAPage from './pages/IAPage'
 import PerfilPage from './pages/PerfilPage'
 import NotFoundPage from './pages/NotFoundPage'
+import AyudaPage from './pages/AyudaPage'
 
 function RutaProtegida({ children, soloAdmin = false }) {
   const { usuario, cargando } = useAuth()
@@ -53,6 +54,7 @@ function AppRoutes() {
         <Route path="ia" element={<IAPage />} />
         <Route path="perfil" element={<PerfilPage />} />
         <Route path="*" element={<NotFoundPage />} />
+        <Route path="ayuda" element={<AyudaPage />} />
       </Route>
     </Routes>
   )

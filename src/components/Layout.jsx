@@ -20,6 +20,7 @@ const MENU_ADMIN = [
   { path: '/seguridad', label: 'Seguridad', emoji: '🔒' },
   { path: '/admin', label: 'Administración', emoji: '⚙️' },
   { path: '/perfil', label: 'Mi Perfil', emoji: '👤' },
+  { path: '/ayuda', label: 'Ayuda', emoji: '📖' },
 ]
 
 const MENU_EMPLEADO = [
@@ -27,6 +28,7 @@ const MENU_EMPLEADO = [
   { path: '/pos', label: 'POS / Cobrar', emoji: '🛒' },
   { path: '/ventas', label: 'Ventas', emoji: '💰' },
   { path: '/ia', label: 'Asistente IA', emoji: '🧠' },
+  { path: '/ayuda', label: 'Ayuda', emoji: '📖' },
 ]
 
 export default function Layout() {
