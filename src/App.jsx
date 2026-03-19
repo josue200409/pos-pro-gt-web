@@ -19,6 +19,7 @@ import TurnosPage from './pages/TurnosPage'
 import SeguridadPage from './pages/SeguridadPage'
 import IAPage from './pages/IAPage'
 import PerfilPage from './pages/PerfilPage'
+import { ToastProvider } from './components/Toast'
 
 function RutaProtegida({ children, soloAdmin = false }) {
   const { usuario, cargando } = useAuth()
@@ -58,11 +59,13 @@ function AppRoutes() {
 export default function App() {
   return (
     <TemaProvider>
-      <AuthProvider>
-        <BrowserRouter>
-          <AppRoutes />
-        </BrowserRouter>
-      </AuthProvider>
+      <ToastProvider>
+        <AuthProvider>
+          <BrowserRouter>
+            <AppRoutes />
+          </BrowserRouter>
+        </AuthProvider>
+      </ToastProvider>
     </TemaProvider>
   )
 }

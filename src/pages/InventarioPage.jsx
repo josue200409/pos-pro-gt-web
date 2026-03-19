@@ -2,8 +2,10 @@ import { useState, useEffect, useRef } from 'react'
 import { productosService, categoriasService, inventarioService } from '../services/api'
 import { useTema } from '../context/TemaContext'
 import * as XLSX from 'xlsx'
+import { useToast } from '../components/Toast'
 
 export default function InventarioPage() {
+  const { toast } = useToast()
   const { modoOscuro } = useTema()
   const [tab, setTab] = useState('productos')
   const [productos, setProductos] = useState([])
@@ -14,17 +16,21 @@ export default function InventarioPage() {
   const [modalForm, setModalForm] = useState(false)
   const [editando, setEditando] = useState(null)
   const [form, setForm] = useState({ nombre: '', precio: '', costo: '', stock: '', stock_minimo: '5', emoji: '📦', codigo_barras: '', categoria_id: '', foto_url: '' })
+  
   // Historial
   const [movimientos, setMovimientos] = useState([])
+  
   // Lotes
   const [lotes, setLotes] = useState([])
   const [alertasLotes, setAlertasLotes] = useState([])
   const [modalLote, setModalLote] = useState(false)
   const [formLote, setFormLote] = useState({ producto_id: '', numero_lote: '', cantidad: '', fecha_vencimiento: '', notas: '' })
+  
   // Promociones
   const [promociones, setPromociones] = useState([])
   const [modalPromo, setModalPromo] = useState(false)
   const [formPromo, setFormPromo] = useState({ nombre: '', tipo: 'descuento_porcentaje', producto_id: '', descuento_porcentaje: '', cantidad_paga: '', cantidad_lleva: '', precio_combo: '', fecha_inicio: '', fecha_fin: '', activa: true })
+  
   // Excel
   const fileRef = useRef()
 
@@ -86,9 +92,10 @@ export default function InventarioPage() {
       const data = { ...form, precio: parseFloat(form.precio), costo: parseFloat(form.costo) || 0, stock: parseInt(form.stock) || 0, stock_minimo: parseInt(form.stock_minimo) || 5, categoria_id: form.categoria_id || null }
       if (editando) await productosService.actualizar(editando.id, data)
       else await productosService.crear(data)
-      setModalForm(false)
+     setModalForm(false)
       cargarDatos()
-    } catch (e) { alert(e.response?.data?.error || 'Error al guardar') }
+      toast(editando ? 'Producto actualizado correctamente' : 'Producto creado correctamente', 'exito')
+    } catch (e) { toast(e.response?.data?.error || 'Error al guardar', 'error')}
   }
 
   const eliminar = async (p) => {
@@ -103,14 +110,14 @@ export default function InventarioPage() {
       await inventarioService.crearLote({ ...formLote, cantidad: parseInt(formLote.cantidad) })
       setModalLote(false)
       setFormLote({ producto_id: '', numero_lote: '', cantidad: '', fecha_vencimiento: '', notas: '' })
-      cargarLotes()
+      toast('Lote registrado correctamente', 'exito')
     } catch (e) { alert(e.response?.data?.error || 'Error') }
   }
 
   const eliminarLote = async (id) => {
     if (!confirm('¿Eliminar este lote?')) return
     await inventarioService.eliminarLote(id)
-    cargarLotes()
+    toast('Lote registrado correctamente', 'exito')
   }
 
   const crearPromocion = async () => {
@@ -119,14 +126,14 @@ export default function InventarioPage() {
       await inventarioService.crearPromocion({ ...formPromo, descuento_porcentaje: parseFloat(formPromo.descuento_porcentaje) || null, cantidad_paga: parseInt(formPromo.cantidad_paga) || null, cantidad_lleva: parseInt(formPromo.cantidad_lleva) || null, precio_combo: parseFloat(formPromo.precio_combo) || null })
       setModalPromo(false)
       setFormPromo({ nombre: '', tipo: 'descuento_porcentaje', producto_id: '', descuento_porcentaje: '', cantidad_paga: '', cantidad_lleva: '', precio_combo: '', fecha_inicio: '', fecha_fin: '', activa: true })
-      cargarPromociones()
+      toast('Promoción creada correctamente', 'exito')
     } catch (e) { alert(e.response?.data?.error || 'Error') }
   }
 
   const eliminarPromocion = async (id) => {
     if (!confirm('¿Eliminar esta promoción?')) return
     await inventarioService.eliminarPromocion(id)
-    cargarPromociones()
+    toast('Promoción creada correctamente', 'exito')
   }
 
   const importarExcel = async (e) => {
@@ -143,8 +150,9 @@ export default function InventarioPage() {
           const r = await inventarioService.importarExcel({ productos: data })
           alert(`✅ ${r.data.importados || data.length} productos importados correctamente`)
           cargarDatos()
-        } catch (e) { alert(e.response?.data?.error || 'Error al importar') }
-      }
+      } catch (e) { toast(e.response?.data?.error || 'Error al guardar', 'error') }
+    }
+
       reader.readAsBinaryString(file)
     } catch (e) { alert('Error al leer el archivo') }
     e.target.value = ''

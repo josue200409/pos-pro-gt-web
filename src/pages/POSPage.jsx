@@ -1,8 +1,10 @@
 import { useState, useEffect, useRef } from 'react'
 import { productosService, ventasService, clientesService } from '../services/api'
 import { useTema } from '../context/TemaContext'
+import { useToast } from '../components/Toast'
 
 export default function POSPage() {
+  const { toast } = useToast()
   const { modoOscuro } = useTema()
   const [productos, setProductos] = useState([])
   const [carrito, setCarrito] = useState([])
@@ -104,12 +106,11 @@ export default function POSPage() {
       setMetodosActivos(['efectivo'])
       setDescuento(0)
       setClienteActivo(null)
-      setVentaExitosa(true)
-      setTimeout(() => setVentaExitosa(false), 3000)
+      toast('¡Venta completada exitosamente!', 'exito')
       cargarDatos()
       busquedaRef.current?.focus()
     } catch (e) {
-      alert(e.response?.data?.error || 'Error al procesar la venta')
+      toast(e.response?.data?.error || 'Error al procesar la venta', 'error')(e.response?.data?.error || 'Error al procesar la venta')
     }
     setProcesando(false)
   }
