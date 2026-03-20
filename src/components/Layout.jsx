@@ -3,7 +3,6 @@ import { useAuth } from '../context/AuthContext'
 import { useTema } from '../context/TemaContext'
 import { useState, useRef } from 'react'
 import Notificaciones from './Notificaciones'
-import { productosService, clientesService } from '../services/api'
 
 const MENU_ADMIN = [
   { path: '/', label: 'Dashboard', emoji: '📊' },
@@ -52,21 +51,24 @@ export default function Layout() {
   }
 
   const buscarGlobal = async (q) => {
-    setBusquedaGlobal(q)
-    if (q.length < 2) { setResultados([]); setMostrarResultados(false); return }
-    setBuscando(true)
-    setMostrarResultados(true)
-    try {
-      const [prods, clts] = await Promise.all([
-        productosService.obtenerTodos(),
-        clientesService.obtenerTodos()
-      ])
-      const productos = (prods.data || []).filter(p => p.nombre.toLowerCase().includes(q.toLowerCase())).slice(0, 4).map(p => ({ tipo: 'producto', emoji: p.emoji || '📦', nombre: p.nombre, sub: `Q${parseFloat(p.precio).toFixed(2)} · Stock: ${p.stock}`, ruta: '/inventario' }))
-      const clientes = (clts.data || []).filter(c => c.nombre.toLowerCase().includes(q.toLowerCase())).slice(0, 3).map(c => ({ tipo: 'cliente', emoji: '👤', nombre: c.nombre, sub: c.telefono || c.email || 'Cliente', ruta: '/clientes' }))
-      setResultados([...productos, ...clientes])
-    } catch { setResultados([]) }
-    setBuscando(false)
-  }
+  setBusquedaGlobal(q)
+  if (q.length < 2) { setResultados([]); setMostrarResultados(false); return }
+  setBuscando(true)
+  setMostrarResultados(true)
+  try {
+    const token = localStorage.getItem('token')
+    const headers = { Authorization: `Bearer ${token}` }
+    const BASE = import.meta.env.VITE_API_URL || 'https://pos-pro-gt-backend.onrender.com/api'
+    const [prods, clts] = await Promise.all([
+      fetch(`${BASE}/productos`, { headers }).then(r => r.json()),
+      fetch(`${BASE}/clientes`, { headers }).then(r => r.json())
+    ])
+    const productos = (Array.isArray(prods) ? prods : []).filter(p => p.nombre.toLowerCase().includes(q.toLowerCase())).slice(0, 4).map(p => ({ tipo: 'producto', emoji: p.emoji || '📦', nombre: p.nombre, sub: `Q${parseFloat(p.precio).toFixed(2)} · Stock: ${p.stock}`, ruta: '/inventario' }))
+    const clientes = (Array.isArray(clts) ? clts : []).filter(c => c.nombre.toLowerCase().includes(q.toLowerCase())).slice(0, 3).map(c => ({ tipo: 'cliente', emoji: '👤', nombre: c.nombre, sub: c.telefono || c.email || 'Cliente', ruta: '/clientes' }))
+    setResultados([...productos, ...clientes])
+  } catch { setResultados([]) }
+  setBuscando(false)
+}
 
   const irA = (ruta) => {
     navigate(ruta)
