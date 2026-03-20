@@ -3,6 +3,7 @@ import { clientesService } from '../services/api'
 import { useTema } from '../context/TemaContext'
 import { useToast } from '../components/Toast'
 import { SkeletonTable } from '../components/Skeleton'
+import { sanitizarObjeto } from '../utils/sanitizar'
 
 const NIVELES = {
   bronce: { color: '#cd7f32', emoji: '🥉', label: 'Bronce', descuento: 2 },
@@ -39,10 +40,11 @@ export default function ClientesPage() {
   }
 
   const guardar = async () => {
-    if (!form.nombre) return alert('Nombre requerido')
-    try {
-      if (editando) await clientesService.actualizar(editando.id, form)
-      else await clientesService.crear(form)
+  if (!form.nombre) return alert('Nombre requerido')
+  try {
+    const formLimpio = sanitizarObjeto(form)
+    if (editando) await clientesService.actualizar(editando.id, formLimpio)
+    else await clientesService.crear(formLimpio)
       setModalForm(false)
       cargarClientes()
       toast(editando ? 'Cliente actualizado' : 'Cliente creado', 'exito')

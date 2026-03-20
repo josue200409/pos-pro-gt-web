@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react'
 import { proveedoresService, productosService } from '../services/api'
 import { useTema } from '../context/TemaContext'
 import { useToast } from '../components/Toast'
+import { sanitizarObjeto } from '../utils/sanitizar'
 
 export default function ProveedoresPage() {
   const { modoOscuro } = useTema()
@@ -40,11 +41,12 @@ export default function ProveedoresPage() {
     setModalForm(true)
   }
 
-  const guardar = async () => {
-    if (!form.nombre) return alert('Nombre requerido')
-    try {
-      if (editando) await proveedoresService.actualizar(editando.id, form)
-      else await proveedoresService.crear(form)
+ const guardar = async () => {
+  if (!form.nombre) return alert('Nombre requerido')
+  try {
+    const formLimpio = sanitizarObjeto(form)
+    if (editando) await proveedoresService.actualizar(editando.id, formLimpio)
+    else await proveedoresService.crear(formLimpio)
       setModalForm(false)
       cargarDatos()
       toast(editando ? 'Proveedor actualizado' : 'Proveedor creado', 'exito')

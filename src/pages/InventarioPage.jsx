@@ -6,6 +6,7 @@ import { useToast } from '../components/Toast'
 import { SkeletonTable } from '../components/Skeleton'
 import SubirFoto from '../components/SubirFoto'
 import Paginacion from '../components/Paginacion'
+import { sanitizarObjeto } from '../utils/sanitizar'
 
 export default function InventarioPage() {
   const [pagina, setPagina] = useState(1)
@@ -108,11 +109,12 @@ const verHistorialPrecios = async (p) => {
   }
 
   const guardar = async () => {
-    if (!form.nombre || !form.precio) return alert('Nombre y precio son requeridos')
-    try {
-      const data = { ...form, precio: parseFloat(form.precio), costo: parseFloat(form.costo) || 0, stock: parseInt(form.stock) || 0, stock_minimo: parseInt(form.stock_minimo) || 5, categoria_id: form.categoria_id || null }
-      if (editando) await productosService.actualizar(editando.id, data)
-      else await productosService.crear(data)
+  if (!form.nombre || !form.precio) return alert('Nombre y precio son requeridos')
+  try {
+    const formLimpio = sanitizarObjeto(form)
+    const data = { ...formLimpio, precio: parseFloat(formLimpio.precio), costo: parseFloat(formLimpio.costo) || 0, stock: parseInt(formLimpio.stock) || 0, stock_minimo: parseInt(formLimpio.stock_minimo) || 5, categoria_id: formLimpio.categoria_id || null }
+    if (editando) await productosService.actualizar(editando.id, data)
+    else await productosService.crear(data)
      setModalForm(false)
       cargarDatos()
       toast(editando ? 'Producto actualizado correctamente' : 'Producto creado correctamente', 'exito')
