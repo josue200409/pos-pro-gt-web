@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
 import { usuariosService } from '../services/api'
 import { useTema } from '../context/TemaContext'
+import { useToast } from '../components/Toast'
 
 const TURNOS = {
   mañana: { label: 'Mañana', emoji: '🌅', hora: '07:00 - 14:00', color: '#f59e0b', bg: 'bg-yellow-50 border-yellow-200' },
@@ -44,11 +45,30 @@ export default function TurnosPage() {
   const lunes = addDias(getLunes(), semanaOffset * 7)
   const diasSemana = DIAS.map((_, i) => addDias(lunes, i))
 
+  const { toast } = useToast()
+
   useEffect(() => {
     cargarEmpleados()
-    const saved = localStorage.getItem('turnos_asignaciones')
-    if (saved) setAsignaciones(JSON.parse(saved))
+    cargarAsignaciones()
   }, [])
+
+  const cargarAsignaciones = async () => {
+    try {
+      const token = localStorage.getItem('token')
+      const r = await fetch('https://pos-pro-gt-backend.onrender.com/api/turnos/asignaciones', {
+        headers: { Authorization: `Bearer ${token}` }
+      })
+      const data = await r.json()
+      const mapa = {}
+      if (Array.isArray(data)) {
+        data.forEach(a => {
+          if (!mapa[a.fecha]) mapa[a.fecha] = {}
+          mapa[a.fecha][String(a.usuario_id)] = a.turno
+        })
+      }
+      setAsignaciones(mapa)
+    } catch (e) { console.log(e) }
+  }
 
   const cargarEmpleados = async () => {
     try {
@@ -63,14 +83,28 @@ export default function TurnosPage() {
     setCargando(false)
   }
 
-  const asignarTurno = (empleadoId, fecha, turno) => {
+  const asignarTurno = async (empleadoId, fecha, turno) => {
     const key = fechaKey(fecha)
-    const nuevas = {
-      ...asignaciones,
-      [key]: { ...(asignaciones[key] || {}), [empleadoId]: asignaciones[key]?.[empleadoId] === turno ? null : turno }
+    const turnoActual = asignaciones[key]?.[empleadoId]
+    const nuevoTurno = turnoActual === turno ? null : turno
+
+    // Actualizar UI inmediatamente
+    setAsignaciones(prev => ({
+      ...prev,
+      [key]: { ...(prev[key] || {}), [empleadoId]: nuevoTurno }
+    }))
+
+    // Guardar en DB
+    try {
+      const token = localStorage.getItem('token')
+      await fetch('https://pos-pro-gt-backend.onrender.com/api/turnos/asignaciones', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+        body: JSON.stringify({ usuario_id: empleadoId, fecha: key, turno: nuevoTurno })
+      })
+    } catch (e) {
+      toast('Error al guardar turno', 'error')
     }
-    setAsignaciones(nuevas)
-    localStorage.setItem('turnos_asignaciones', JSON.stringify(nuevas))
   }
 
   const getTurno = (empleadoId, fecha) => {
