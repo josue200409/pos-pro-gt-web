@@ -38,6 +38,7 @@ export const authService = {
 }
 
 export const productosService = {
+  historialPrecios: (id) => api.get(`/productos/${id}/historial-precios`),
   obtenerTodos: () => api.get('/productos'),
   crear: (data) => api.post('/productos', data),
   actualizar: (id, data) => api.put(`/productos/${id}`, data),

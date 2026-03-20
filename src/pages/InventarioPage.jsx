@@ -42,6 +42,17 @@ export default function InventarioPage() {
   // Excel
   const fileRef = useRef()
 
+  const [modalHistorialPrecios, setModalHistorialPrecios] = useState(null)
+const [historialPrecios, setHistorialPrecios] = useState([])
+
+const verHistorialPrecios = async (p) => {
+  setModalHistorialPrecios(p)
+  try {
+    const r = await productosService.historialPrecios(p.id)
+    setHistorialPrecios(r.data || [])
+  } catch { setHistorialPrecios([]) }
+}
+
   useEffect(() => { cargarDatos() }, [])
   useEffect(() => { setPagina(1) }, [busqueda, categoriaFiltro])
   useEffect(() => {
@@ -387,6 +398,7 @@ const eliminarCategoria = async (c) => {
                           <div className="flex items-center justify-center gap-2">
                             <button onClick={() => abrirModal(p)} className={`p-1.5 rounded-lg ${modoOscuro ? 'hover:bg-gray-600 text-blue-400' : 'hover:bg-blue-50 text-blue-600'}`}>✏️</button>
                             <button onClick={() => eliminar(p)} className={`p-1.5 rounded-lg ${modoOscuro ? 'hover:bg-gray-600 text-red-400' : 'hover:bg-red-50 text-red-600'}`}>🗑️</button>
+                          <button onClick={() => verHistorialPrecios(p)} className={`p-1.5 rounded-lg ${modoOscuro ? 'hover:bg-gray-600 text-green-400' : 'hover:bg-green-50 text-green-600'}`}>📈</button>
                           </div>
                         </td>
                       </tr>
@@ -766,7 +778,76 @@ const eliminarCategoria = async (c) => {
             </div>
           </div>
         </div>
+
+        
       )}
+      {/* MODAL HISTORIAL PRECIOS */}
+{modalHistorialPrecios && (
+  <div className="fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center z-50 p-4">
+    <div className={`rounded-2xl p-6 w-full max-w-lg shadow-2xl animate-slide-up max-h-96 overflow-y-auto ${modoOscuro ? 'bg-gray-800' : 'bg-white'}`}>
+      <div className="flex items-center justify-between mb-4">
+        <div>
+          <h2 className={`text-lg font-black ${text}`}>📈 Historial de Precios</h2>
+          <p className={`text-xs ${textSub}`}>{modalHistorialPrecios.nombre}</p>
+        </div>
+        <button onClick={() => setModalHistorialPrecios(null)} className={`w-8 h-8 rounded-xl ${modoOscuro ? 'bg-gray-700 text-gray-400' : 'bg-gray-100 text-gray-500'}`}>✕</button>
+      </div>
+
+      <div className={`p-3 rounded-xl mb-4 flex justify-between ${modoOscuro ? 'bg-gray-700' : 'bg-gray-50'}`}>
+        <div className="text-center">
+          <div className="text-lg font-black text-blue-500">Q{parseFloat(modalHistorialPrecios.precio).toFixed(2)}</div>
+          <div className={`text-xs ${textSub}`}>Precio actual</div>
+        </div>
+        <div className="text-center">
+          <div className={`text-lg font-black ${textSub}`}>Q{parseFloat(modalHistorialPrecios.costo || 0).toFixed(2)}</div>
+          <div className={`text-xs ${textSub}`}>Costo actual</div>
+        </div>
+        <div className="text-center">
+          <div className="text-lg font-black text-green-500">
+            {modalHistorialPrecios.costo > 0 ? `${(((modalHistorialPrecios.precio - modalHistorialPrecios.costo) / modalHistorialPrecios.costo) * 100).toFixed(0)}%` : 'N/A'}
+          </div>
+          <div className={`text-xs ${textSub}`}>Margen</div>
+        </div>
+      </div>
+
+      {historialPrecios.length === 0 ? (
+        <div className="text-center py-8">
+          <div className="text-4xl mb-2">📈</div>
+          <p className={textSub}>Sin cambios de precio registrados</p>
+        </div>
+      ) : (
+        <div className="space-y-3">
+          {historialPrecios.map(h => (
+            <div key={h.id} className={`p-3 rounded-xl ${modoOscuro ? 'bg-gray-700' : 'bg-gray-50'}`}>
+              <div className="flex justify-between items-center mb-1">
+                <span className={`text-xs ${textSub}`}>{new Date(h.created_at).toLocaleString('es-GT')}</span>
+                <span className={`text-xs ${textSub}`}>{h.nombre_usuario || 'Sistema'}</span>
+              </div>
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <p className={`text-xs ${textSub}`}>Precio</p>
+                  <div className="flex items-center gap-2">
+                    <span className="text-sm line-through text-red-400">Q{parseFloat(h.precio_anterior).toFixed(2)}</span>
+                    <span>→</span>
+                    <span className="text-sm font-bold text-green-500">Q{parseFloat(h.precio_nuevo).toFixed(2)}</span>
+                  </div>
+                </div>
+                <div>
+                  <p className={`text-xs ${textSub}`}>Costo</p>
+                  <div className="flex items-center gap-2">
+                    <span className="text-sm line-through text-red-400">Q{parseFloat(h.costo_anterior).toFixed(2)}</span>
+                    <span>→</span>
+                    <span className="text-sm font-bold text-blue-500">Q{parseFloat(h.costo_nuevo).toFixed(2)}</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  </div>
+)}
     </div>
   )
 }
