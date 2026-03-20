@@ -104,7 +104,7 @@ export default function VentasPage() {
   const text = modoOscuro ? 'text-white' : 'text-gray-800'
   const textSub = modoOscuro ? 'text-gray-400' : 'text-gray-500'
 
- if (cargando) return (
+  if (cargando) return (
     <div className={`p-6 ${bg} min-h-full space-y-6`}>
       <SkeletonCards cantidad={4} modoOscuro={modoOscuro} />
       <SkeletonTable filas={5} modoOscuro={modoOscuro} />
@@ -124,8 +124,7 @@ export default function VentasPage() {
             className={`px-4 py-2 rounded-xl font-bold text-sm border transition-all ${mostrarFiltros ? 'bg-blue-600 text-white border-blue-600' : modoOscuro ? 'border-gray-600 text-gray-300 hover:bg-gray-700' : 'border-gray-200 text-gray-600 hover:bg-gray-50'}`}>
             🔍 Filtros
           </button>
-          <button onClick={exportarExcel}
-            className="bg-green-600 text-white px-4 py-2 rounded-xl font-bold text-sm hover:bg-green-700 shadow-md">
+          <button onClick={exportarExcel} className="bg-green-600 text-white px-4 py-2 rounded-xl font-bold text-sm hover:bg-green-700 shadow-md">
             📊 Excel
           </button>
           {usuario.rol === 'admin' && (
@@ -175,16 +174,7 @@ export default function VentasPage() {
           </div>
         </div>
       )}
-{cargando ? (
-  <div className="space-y-6">
-    <SkeletonCards cantidad={4} modoOscuro={modoOscuro} />
-    <SkeletonTable filas={5} modoOscuro={modoOscuro} />
-  </div>
-) : (
-  <>
-    {/* todo el contenido actual */}
-  </>
-)}
+
       {vistaActual === 'hoy' && (
         <>
           {/* TARJETAS */}
