@@ -1,4 +1,5 @@
 import axios from 'axios'
+import { conCache, cache } from '../utils/cache'
 
 const BASE_URL = import.meta.env.VITE_API_URL || 'https://pos-pro-gt-backend.onrender.com/api'
 
@@ -38,11 +39,11 @@ export const authService = {
 }
 
 export const productosService = {
+  obtenerTodos: () => conCache('productos', () => api.get('/productos').then(r => r), 3 * 60 * 1000),
+  crear: async (data) => { const r = await api.post('/productos', data); cache.invalidar('productos'); return r },
+  actualizar: async (id, data) => { const r = await api.put(`/productos/${id}`, data); cache.invalidar('productos'); return r },
+  eliminar: async (id) => { const r = await api.delete(`/productos/${id}`); cache.invalidar('productos'); return r },
   historialPrecios: (id) => api.get(`/productos/${id}/historial-precios`),
-  obtenerTodos: () => api.get('/productos'),
-  crear: (data) => api.post('/productos', data),
-  actualizar: (id, data) => api.put(`/productos/${id}`, data),
-  eliminar: (id) => api.delete(`/productos/${id}`),
 }
 
 export const ventasService = {
@@ -54,10 +55,10 @@ export const ventasService = {
 }
 
 export const clientesService = {
-  obtenerTodos: () => api.get('/clientes'),
-  crear: (data) => api.post('/clientes', data),
-  actualizar: (id, data) => api.put(`/clientes/${id}`, data),
-  eliminar: (id) => api.delete(`/clientes/${id}`),
+  obtenerTodos: () => conCache('clientes', () => api.get('/clientes').then(r => r), 3 * 60 * 1000),
+  crear: async (data) => { const r = await api.post('/clientes', data); cache.invalidar('clientes'); return r },
+  actualizar: async (id, data) => { const r = await api.put(`/clientes/${id}`, data); cache.invalidar('clientes'); return r },
+  eliminar: async (id) => { const r = await api.delete(`/clientes/${id}`); cache.invalidar('clientes'); return r },
 }
 
 export const usuariosService = {
@@ -103,11 +104,12 @@ export const monitorService = {
   health: () => api.get('/monitor/health'),
   stats: () => api.get('/monitor/stats'),
 }
+
 export const categoriasService = {
-  obtenerTodas: () => api.get('/productos/categorias/todas'),
-  crear: (data) => api.post('/productos/categorias', data),
-  actualizar: (id, data) => api.put(`/productos/categorias/${id}`, data),
-  eliminar: (id) => api.delete(`/productos/categorias/${id}`),
+  obtenerTodas: () => conCache('categorias', () => api.get('/productos/categorias').then(r => r), 10 * 60 * 1000),
+  crear: async (data) => { const r = await api.post('/productos/categorias', data); cache.invalidar('categorias'); return r },
+  actualizar: async (id, data) => { const r = await api.put(`/productos/categorias/${id}`, data); cache.invalidar('categorias'); return r },
+  eliminar: async (id) => { const r = await api.delete(`/productos/categorias/${id}`); cache.invalidar('categorias'); return r },
 }
 
 export const configuracionService = {
