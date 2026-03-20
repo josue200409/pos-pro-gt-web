@@ -5,8 +5,11 @@ import * as XLSX from 'xlsx'
 import { useToast } from '../components/Toast'
 import { SkeletonTable } from '../components/Skeleton'
 import SubirFoto from '../components/SubirFoto'
+import Paginacion from '../components/Paginacion'
 
 export default function InventarioPage() {
+  const [pagina, setPagina] = useState(1)
+  const POR_PAGINA = 20
   const [categoriaForm, setCategoriaForm] = useState({ nombre: '', emoji: '📦', color: '#3b82f6' })
   const [modalCategoria, setModalCategoria] = useState(false)
   const [editandoCategoria, setEditandoCategoria] = useState(null)
@@ -40,6 +43,7 @@ export default function InventarioPage() {
   const fileRef = useRef()
 
   useEffect(() => { cargarDatos() }, [])
+  useEffect(() => { setPagina(1) }, [busqueda, categoriaFiltro])
   useEffect(() => {
     if (tab === 'historial') cargarMovimientos()
     if (tab === 'lotes') cargarLotes()
@@ -165,6 +169,7 @@ export default function InventarioPage() {
   }
 
   const productosFiltrados = productos.filter(p => {
+    const productosPaginados = productosFiltrados.slice((pagina - 1) * POR_PAGINA, pagina * POR_PAGINA)
     const matchBusqueda = p.nombre.toLowerCase().includes(busqueda.toLowerCase()) || (p.codigo_barras && p.codigo_barras.includes(busqueda))
     const matchCategoria = !categoriaFiltro || p.categoria_id === parseInt(categoriaFiltro)
     return matchBusqueda && matchCategoria
@@ -389,6 +394,12 @@ const eliminarCategoria = async (c) => {
                   })}
                 </tbody>
               </table>
+              <Paginacion
+                total={productosFiltrados.length}
+                porPagina={POR_PAGINA}
+                paginaActual={pagina}
+                onCambiar={p => { setPagina(p); window.scrollTo(0, 0) }}
+              />
               {productosFiltrados.length === 0 && (
                 <div className="text-center py-12">
                   <div className="text-4xl mb-2">📦</div>

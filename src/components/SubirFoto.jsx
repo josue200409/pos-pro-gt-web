@@ -1,8 +1,8 @@
 import { useState, useRef } from 'react'
 import { useTema } from '../context/TemaContext'
 
-const CLOUD_NAME = 'dpwlzl4lv'
-const UPLOAD_PRESET = 'pos_pro_gt'
+const CLOUD_NAME = import.meta.env.VITE_CLOUDINARY_CLOUD_NAME || 'dpwlzl4lv'
+const UPLOAD_PRESET = import.meta.env.VITE_CLOUDINARY_UPLOAD_PRESET || 'pos_pro_gt'
 
 export default function SubirFoto({ fotoActual, onFotoSubida, label = 'Foto', size = 'md' }) {
   const { modoOscuro } = useTema()
