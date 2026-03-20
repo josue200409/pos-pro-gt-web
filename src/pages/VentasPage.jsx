@@ -2,10 +2,11 @@ import { useState, useEffect } from 'react'
 import { ventasService, usuariosService } from '../services/api'
 import { useTema } from '../context/TemaContext'
 import { useToast } from '../components/Toast'
+import * as XLSX from 'xlsx'
 
 export default function VentasPage() {
-  const { toast } = useToast()
   const { modoOscuro } = useTema()
+  const { toast } = useToast()
   const [ventas, setVentas] = useState([])
   const [resumen, setResumen] = useState(null)
   const [cargando, setCargando] = useState(true)
@@ -15,6 +16,10 @@ export default function VentasPage() {
   const [empleadoSel, setEmpleadoSel] = useState(null)
   const [ventasEmpleado, setVentasEmpleado] = useState([])
   const [cargandoEmpleado, setCargandoEmpleado] = useState(false)
+  const [filtroMetodo, setFiltroMetodo] = useState('')
+  const [filtroFechaDesde, setFiltroFechaDesde] = useState('')
+  const [filtroFechaHasta, setFiltroFechaHasta] = useState('')
+  const [mostrarFiltros, setMostrarFiltros] = useState(false)
   const usuario = JSON.parse(localStorage.getItem('usuario') || '{}')
 
   useEffect(() => { cargarDatos() }, [])
@@ -41,7 +46,6 @@ export default function VentasPage() {
     try {
       const hoy = new Date()
       const hace30 = new Date(hoy - 30 * 24 * 60 * 60 * 1000)
-      const r = await usuariosService.listar()
       const resp = await fetch(
         `https://pos-pro-gt-backend.onrender.com/api/auth/usuarios/${emp.id}/ventas?desde=${hace30.toISOString().split('T')[0]}&hasta=${hoy.toISOString().split('T')[0]}`,
         { headers: { Authorization: `Bearer ${localStorage.getItem('token')}` } }
@@ -59,7 +63,28 @@ export default function VentasPage() {
       cargarDatos()
       toast('Venta cancelada correctamente', 'exito')
     } catch (e) { toast(e.response?.data?.error || 'Error al cancelar', 'error') }
-    }
+  }
+
+  const ventasFiltradas = ventas.filter(v => {
+    const matchMetodo = !filtroMetodo || v.metodo_pago === filtroMetodo
+    const matchDesde = !filtroFechaDesde || new Date(v.created_at) >= new Date(filtroFechaDesde)
+    const matchHasta = !filtroFechaHasta || new Date(v.created_at) <= new Date(filtroFechaHasta + 'T23:59:59')
+    return matchMetodo && matchDesde && matchHasta
+  })
+
+  const exportarExcel = () => {
+    const datos = ventasFiltradas.map(v => ({
+      'Hora': new Date(v.created_at).toLocaleString('es-GT'),
+      'Método': v.metodo_pago,
+      'Total': parseFloat(v.total).toFixed(2),
+      'Vuelto': parseFloat(v.vuelto || 0).toFixed(2),
+      'Estado': v.cancelada ? 'Cancelada' : 'Completada',
+    }))
+    const ws = XLSX.utils.json_to_sheet(datos)
+    const wb = XLSX.utils.book_new()
+    XLSX.utils.book_append_sheet(wb, ws, 'Ventas')
+    XLSX.writeFile(wb, `ventas_${new Date().toISOString().split('T')[0]}.xlsx`)
+  }
 
   const metodoEmoji = (m) => m === 'efectivo' ? '💵' : m === 'tarjeta' ? '💳' : '📱'
   const metodoColor = (m) => m === 'efectivo' ? 'text-green-500' : m === 'tarjeta' ? 'text-blue-500' : 'text-purple-500'
@@ -81,18 +106,26 @@ export default function VentasPage() {
   return (
     <div className={`p-6 ${bg} min-h-full`}>
       {/* HEADER */}
-      <div className="flex items-center justify-between mb-6">
+      <div className="flex items-center justify-between mb-4">
         <div>
           <h1 className={`text-2xl font-black ${text}`}>💰 Ventas</h1>
           <p className={`text-sm mt-1 ${textSub}`}>{ventasActivas.length} transacciones hoy</p>
         </div>
-        <div className="flex gap-2">
+        <div className="flex gap-2 flex-wrap">
+          <button onClick={() => setMostrarFiltros(!mostrarFiltros)}
+            className={`px-4 py-2 rounded-xl font-bold text-sm border transition-all ${mostrarFiltros ? 'bg-blue-600 text-white border-blue-600' : modoOscuro ? 'border-gray-600 text-gray-300 hover:bg-gray-700' : 'border-gray-200 text-gray-600 hover:bg-gray-50'}`}>
+            🔍 Filtros
+          </button>
+          <button onClick={exportarExcel}
+            className="bg-green-600 text-white px-4 py-2 rounded-xl font-bold text-sm hover:bg-green-700 shadow-md">
+            📊 Excel
+          </button>
           {usuario.rol === 'admin' && (
             <div className={`flex rounded-xl border overflow-hidden ${modoOscuro ? 'border-gray-700' : 'border-gray-200'}`}>
               {['hoy', 'empleados'].map(v => (
                 <button key={v} onClick={() => setVistaActual(v)}
-                  className={`px-4 py-2 text-sm font-bold transition-all capitalize ${vistaActual === v ? 'bg-blue-600 text-white' : modoOscuro ? 'bg-gray-800 text-gray-400' : 'bg-white text-gray-500'}`}>
-                  {v === 'hoy' ? '📅 Hoy' : '👥 Por Empleado'}
+                  className={`px-4 py-2 text-sm font-bold transition-all ${vistaActual === v ? 'bg-blue-600 text-white' : modoOscuro ? 'bg-gray-800 text-gray-400' : 'bg-white text-gray-500'}`}>
+                  {v === 'hoy' ? '📅 Hoy' : '👥 Empleados'}
                 </button>
               ))}
             </div>
@@ -100,6 +133,40 @@ export default function VentasPage() {
           <button onClick={cargarDatos} className="bg-blue-600 text-white px-4 py-2 rounded-xl font-bold text-sm hover:bg-blue-700 shadow-md">🔄</button>
         </div>
       </div>
+
+      {/* FILTROS */}
+      {mostrarFiltros && (
+        <div className={`${card} p-4 mb-4`}>
+          <div className="flex gap-3 flex-wrap items-end">
+            <div>
+              <label className={`text-xs font-bold uppercase mb-1 block ${textSub}`}>Método</label>
+              <select value={filtroMetodo} onChange={e => setFiltroMetodo(e.target.value)}
+                className={`px-3 py-2 rounded-xl border text-sm focus:outline-none ${modoOscuro ? 'bg-gray-700 border-gray-600 text-white' : 'bg-white border-gray-200'}`}>
+                <option value="">Todos</option>
+                <option value="efectivo">💵 Efectivo</option>
+                <option value="tarjeta">💳 Tarjeta</option>
+                <option value="transferencia">📱 Transferencia</option>
+                <option value="mixto">🔀 Mixto</option>
+              </select>
+            </div>
+            <div>
+              <label className={`text-xs font-bold uppercase mb-1 block ${textSub}`}>Desde</label>
+              <input type="date" value={filtroFechaDesde} onChange={e => setFiltroFechaDesde(e.target.value)}
+                className={`px-3 py-2 rounded-xl border text-sm focus:outline-none ${modoOscuro ? 'bg-gray-700 border-gray-600 text-white' : 'bg-white border-gray-200'}`} />
+            </div>
+            <div>
+              <label className={`text-xs font-bold uppercase mb-1 block ${textSub}`}>Hasta</label>
+              <input type="date" value={filtroFechaHasta} onChange={e => setFiltroFechaHasta(e.target.value)}
+                className={`px-3 py-2 rounded-xl border text-sm focus:outline-none ${modoOscuro ? 'bg-gray-700 border-gray-600 text-white' : 'bg-white border-gray-200'}`} />
+            </div>
+            <button onClick={() => { setFiltroMetodo(''); setFiltroFechaDesde(''); setFiltroFechaHasta('') }}
+              className={`px-4 py-2 rounded-xl text-sm font-bold ${modoOscuro ? 'bg-gray-700 text-gray-300' : 'bg-gray-100 text-gray-600'}`}>
+              ✕ Limpiar
+            </button>
+            <span className={`text-xs ${textSub} ml-auto`}>{ventasFiltradas.length} resultados</span>
+          </div>
+        </div>
+      )}
 
       {vistaActual === 'hoy' && (
         <>
@@ -127,7 +194,7 @@ export default function VentasPage() {
                 { label: '💵 Efectivo', val: totalEfectivo, color: 'text-green-500' },
                 { label: '💳 Tarjeta', val: totalTarjeta, color: 'text-blue-500' },
                 { label: '📱 Transferencia', val: totalTransferencia, color: 'text-purple-500' },
-                { label: '🔄 Vuelto entregado', val: totalVuelto, color: 'text-red-500', negativo: true },
+                { label: '🔄 Vuelto', val: totalVuelto, color: 'text-red-500', negativo: true },
               ].map(({ label, val, color, negativo }) => (
                 <div key={label} className={`p-3 rounded-xl text-center ${modoOscuro ? 'bg-gray-700' : 'bg-gray-50'}`}>
                   <div className={`text-lg font-black ${color}`}>{negativo ? '-' : ''}Q{val.toFixed(2)}</div>
@@ -141,10 +208,10 @@ export default function VentasPage() {
             </div>
           </div>
 
-          {/* TABLA VENTAS */}
+          {/* TABLA */}
           <div className={`${card} overflow-hidden`}>
             <div className={`p-4 border-b ${modoOscuro ? 'border-gray-700' : 'border-gray-100'}`}>
-              <h2 className={`font-bold ${text}`}>Transacciones del Día</h2>
+              <h2 className={`font-bold ${text}`}>Transacciones {ventasFiltradas.length !== ventas.length ? `(${ventasFiltradas.length} filtradas)` : 'del Día'}</h2>
             </div>
             <div className="overflow-x-auto">
               <table className="w-full">
@@ -159,7 +226,7 @@ export default function VentasPage() {
                   </tr>
                 </thead>
                 <tbody className={`divide-y ${modoOscuro ? 'divide-gray-700' : 'divide-gray-100'}`}>
-                  {ventas.map(v => (
+                  {ventasFiltradas.map(v => (
                     <tr key={v.id} className={`transition-colors ${modoOscuro ? 'hover:bg-gray-700' : 'hover:bg-gray-50'} ${v.cancelada ? 'opacity-50' : ''}`}>
                       <td className={`px-4 py-3 text-sm ${textSub}`}>{formatHora(v.created_at)}</td>
                       <td className="px-4 py-3">
@@ -167,7 +234,7 @@ export default function VentasPage() {
                           {metodoEmoji(v.metodo_pago)} <span className="capitalize">{v.metodo_pago}</span>
                         </span>
                       </td>
-                      <td className={`px-4 py-3 text-right text-sm font-black text-blue-500`}>Q{parseFloat(v.total).toFixed(2)}</td>
+                      <td className="px-4 py-3 text-right text-sm font-black text-blue-500">Q{parseFloat(v.total).toFixed(2)}</td>
                       <td className={`px-4 py-3 text-right text-sm ${textSub}`}>{v.vuelto > 0 ? `Q${parseFloat(v.vuelto).toFixed(2)}` : '—'}</td>
                       <td className="px-4 py-3 text-center">
                         <span className={`px-2 py-1 rounded-full text-xs font-bold ${v.cancelada ? 'bg-red-100 text-red-600' : 'bg-green-100 text-green-600'}`}>
@@ -186,6 +253,12 @@ export default function VentasPage() {
                   ))}
                 </tbody>
               </table>
+              {ventasFiltradas.length === 0 && (
+                <div className="text-center py-8">
+                  <div className="text-4xl mb-2">🔍</div>
+                  <p className={textSub}>No hay ventas con estos filtros</p>
+                </div>
+              )}
             </div>
           </div>
         </>
@@ -204,7 +277,6 @@ export default function VentasPage() {
               </button>
             ))}
           </div>
-
           <div className="flex-1">
             {!empleadoSel ? (
               <div className={`${card} p-12 text-center`}>
@@ -212,9 +284,7 @@ export default function VentasPage() {
                 <p className={textSub}>Selecciona un empleado</p>
               </div>
             ) : cargandoEmpleado ? (
-              <div className={`${card} p-12 text-center`}>
-                <p className={textSub}>Cargando...</p>
-              </div>
+              <div className={`${card} p-12 text-center`}><p className={textSub}>Cargando...</p></div>
             ) : (
               <>
                 <div className={`${card} p-5 mb-4`}>
@@ -231,7 +301,6 @@ export default function VentasPage() {
                     </div>
                   </div>
                 </div>
-
                 <div className={`${card} overflow-hidden`}>
                   <table className="w-full">
                     <thead className={`text-xs font-bold uppercase ${modoOscuro ? 'bg-gray-700 text-gray-400' : 'bg-gray-50 text-gray-500'}`}>
