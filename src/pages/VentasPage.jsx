@@ -104,6 +104,13 @@ export default function VentasPage() {
   const text = modoOscuro ? 'text-white' : 'text-gray-800'
   const textSub = modoOscuro ? 'text-gray-400' : 'text-gray-500'
 
+ if (cargando) return (
+    <div className={`p-6 ${bg} min-h-full space-y-6`}>
+      <SkeletonCards cantidad={4} modoOscuro={modoOscuro} />
+      <SkeletonTable filas={5} modoOscuro={modoOscuro} />
+    </div>
+  )
+
   return (
     <div className={`p-6 ${bg} min-h-full`}>
       {/* HEADER */}
