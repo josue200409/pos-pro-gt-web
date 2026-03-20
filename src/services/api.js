@@ -85,6 +85,9 @@ export const proveedoresService = {
   crear: (data) => api.post('/proveedores', data),
   actualizar: (id, data) => api.put(`/proveedores/${id}`, data),
   eliminar: (id) => api.delete(`/proveedores/${id}`),
+  compras: (id) => api.get(`/proveedores/${id}/compras`),
+  registrarCompra: (id, data) => api.post(`/proveedores/${id}/compra`, data),
+  alertasStockBajo: () => api.get('/proveedores/alertas/stock-bajo'),
 }
 
 export const sucursalesService = {
