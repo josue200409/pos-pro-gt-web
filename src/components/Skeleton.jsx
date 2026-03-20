@@ -69,5 +69,31 @@ export function SkeletonDashboard({ modoOscuro }) {
         ))}
       </div>
     </div>
+)export function SkeletonCards({ cantidad = 4, modoOscuro }) {
+  return (
+    <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+      {Array.from({ length: cantidad }).map((_, i) => (
+        <div key={i} className={`rounded-2xl p-5 h-28 animate-pulse ${modoOscuro ? 'bg-gray-800' : 'bg-gray-200'}`}></div>
+      ))}
+    </div>
   )
+}
+
+export function SkeletonList({ filas = 5, modoOscuro }) {
+  return (
+    <div className="space-y-3">
+      {Array.from({ length: filas }).map((_, i) => (
+        <div key={i} className={`rounded-2xl p-4 flex items-center gap-4 animate-pulse ${modoOscuro ? 'bg-gray-800' : 'bg-gray-200'}`}>
+          <div className={`w-12 h-12 rounded-xl flex-shrink-0 ${modoOscuro ? 'bg-gray-700' : 'bg-gray-300'}`}></div>
+          <div className="flex-1 space-y-2">
+            <div className={`h-4 rounded-lg w-48 ${modoOscuro ? 'bg-gray-700' : 'bg-gray-300'}`}></div>
+            <div className={`h-3 rounded-lg w-32 ${modoOscuro ? 'bg-gray-700' : 'bg-gray-300'}`}></div>
+          </div>
+          <div className={`h-6 w-16 rounded-full ${modoOscuro ? 'bg-gray-700' : 'bg-gray-300'}`}></div>
+        </div>
+      ))}
+    </div>
+  )
+}
+
 }

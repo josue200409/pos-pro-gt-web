@@ -3,6 +3,7 @@ import { ventasService, usuariosService } from '../services/api'
 import { useTema } from '../context/TemaContext'
 import { useToast } from '../components/Toast'
 import * as XLSX from 'xlsx'
+import { SkeletonCards, SkeletonTable } from '../components/Skeleton'
 
 export default function VentasPage() {
   const { modoOscuro } = useTema()
@@ -167,7 +168,16 @@ export default function VentasPage() {
           </div>
         </div>
       )}
-
+{cargando ? (
+  <div className="space-y-6">
+    <SkeletonCards cantidad={4} modoOscuro={modoOscuro} />
+    <SkeletonTable filas={5} modoOscuro={modoOscuro} />
+  </div>
+) : (
+  <>
+    {/* todo el contenido actual */}
+  </>
+)}
       {vistaActual === 'hoy' && (
         <>
           {/* TARJETAS */}

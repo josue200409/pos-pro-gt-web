@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react'
 import { cajaService } from '../services/api'
 import { useTema } from '../context/TemaContext'
 import { useToast } from '../components/Toast'
+import { SkeletonCards } from '../components/Skeleton'
 
 export default function CajaPage() {
   const { toast } = useToast()
@@ -63,7 +64,8 @@ export default function CajaPage() {
     try {
       await cajaService.agregarGasto({ descripcion: gastoDesc, monto: parseFloat(gastoMonto), categoria: gastoCategoria })
       setModalGasto(false)
-      setGastoDesc(''); setGastoMonto('')
+      setGastoDesc('')
+      setGastoMonto('')
       cargarDatos()
       toast('Gasto registrado correctamente', 'exito')
     } catch { toast('Error al registrar gasto', 'error') }
@@ -79,6 +81,7 @@ export default function CajaPage() {
     const v = (datos?.ventas || []).find(v => v.metodo_pago === metodo)
     return parseFloat(v?.total || 0)
   }
+
   const totalEfectivo = ventasPorMetodo('efectivo')
   const totalTarjeta = ventasPorMetodo('tarjeta')
   const totalTransferencia = ventasPorMetodo('transferencia')
@@ -103,6 +106,12 @@ export default function CajaPage() {
   const textSub = modoOscuro ? 'text-gray-400' : 'text-gray-500'
   const inputCls = `w-full px-4 py-3 rounded-xl border text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 ${modoOscuro ? 'bg-gray-700 border-gray-600 text-white' : 'bg-white border-gray-200'}`
   const modal = `rounded-2xl p-6 w-full shadow-2xl animate-slide-up ${modoOscuro ? 'bg-gray-800' : 'bg-white'}`
+
+  if (cargando) return (
+    <div className={`p-6 ${bg} min-h-full`}>
+      <SkeletonCards cantidad={4} modoOscuro={modoOscuro} />
+    </div>
+  )
 
   return (
     <div className={`p-6 ${bg} min-h-full`}>
@@ -203,7 +212,7 @@ export default function CajaPage() {
       {cajaCerrada && datos?.cierre && (
         <div className={`mt-6 ${card} p-5`}>
           <h2 className={`text-xs font-bold uppercase mb-4 ${textSub}`}>📋 Resumen del Cierre</h2>
-          <div className={`grid grid-cols-3 gap-4`}>
+          <div className="grid grid-cols-3 gap-4">
             {[
               { label: 'Esperado', val: `Q${parseFloat(datos.cierre.efectivo_esperado).toFixed(2)}`, color: textSub },
               { label: 'Contado', val: `Q${parseFloat(datos.cierre.efectivo_contado).toFixed(2)}`, color: text },
@@ -224,10 +233,11 @@ export default function CajaPage() {
           <div className={`${modal} max-w-sm`}>
             <h2 className={`text-lg font-black mb-2 ${text}`}>🔓 Apertura de Caja</h2>
             <p className={`text-sm mb-4 ${textSub}`}>¿Cuánto efectivo hay en caja al inicio?</p>
-            <input type="number" value={efectivoInicial} onChange={e => setEfectivoInicial(e.target.value)} placeholder="Q0.00" className={`${inputCls} text-2xl font-black text-center mb-4`} autoFocus />
+            <input type="number" value={efectivoInicial} onChange={e => setEfectivoInicial(e.target.value)}
+              placeholder="Q0.00" className={`${inputCls} text-2xl font-black text-center mb-4`} autoFocus />
             <div className="flex gap-3">
               <button onClick={() => setModalApertura(false)} className={`flex-1 py-2 rounded-xl border text-sm font-semibold ${modoOscuro ? 'border-gray-600 text-gray-300' : 'border-gray-200 text-gray-500'}`}>Cancelar</button>
-              <button onClick={abrirCaja} className="flex-2 px-6 py-2 rounded-xl bg-green-600 text-white font-black text-sm hover:bg-green-700 shadow-md">🔓 Abrir Caja</button>
+              <button onClick={abrirCaja} className="flex-1 py-2 rounded-xl bg-green-600 text-white font-black text-sm hover:bg-green-700 shadow-md">🔓 Abrir Caja</button>
             </div>
           </div>
         </div>
@@ -240,12 +250,13 @@ export default function CajaPage() {
             <h2 className={`text-lg font-black mb-2 ${text}`}>🔒 Cierre de Caja</h2>
             <p className={`text-sm mb-4 ${textSub}`}>Cuenta el efectivo físico y confirma el cierre</p>
             <div className={`p-3 rounded-xl mb-4 ${modoOscuro ? 'bg-gray-700' : 'bg-gray-50'}`}>
-              <div className="flex justify-between text-sm mb-1">
+              <div className="flex justify-between text-sm">
                 <span className={textSub}>Esperado en caja</span>
-                <span className={`font-black text-green-500`}>Q{efectivoInCaja.toFixed(2)}</span>
+                <span className="font-black text-green-500">Q{efectivoInCaja.toFixed(2)}</span>
               </div>
             </div>
-            <input type="number" value={efectivoContado} onChange={e => setEfectivoContado(e.target.value)} placeholder="Efectivo contado Q" className={`${inputCls} text-2xl font-black text-center mb-3`} autoFocus />
+            <input type="number" value={efectivoContado} onChange={e => setEfectivoContado(e.target.value)}
+              placeholder="Efectivo contado Q" className={`${inputCls} text-2xl font-black text-center mb-3`} autoFocus />
             {diferenciaCierre !== null && (
               <div className={`p-3 rounded-xl text-center mb-4 ${diferenciaCierre === 0 ? 'bg-green-50 text-green-700' : diferenciaCierre > 0 ? 'bg-blue-50 text-blue-700' : 'bg-red-50 text-red-700'}`}>
                 <div className="font-black text-lg">
@@ -255,7 +266,7 @@ export default function CajaPage() {
             )}
             <div className="flex gap-3">
               <button onClick={() => setModalCierre(false)} className={`flex-1 py-2 rounded-xl border text-sm font-semibold ${modoOscuro ? 'border-gray-600 text-gray-300' : 'border-gray-200 text-gray-500'}`}>Cancelar</button>
-              <button onClick={cerrarCaja} className="flex-2 px-6 py-2 rounded-xl bg-red-600 text-white font-black text-sm hover:bg-red-700 shadow-md">🔒 Cerrar Caja</button>
+              <button onClick={cerrarCaja} className="flex-1 py-2 rounded-xl bg-red-600 text-white font-black text-sm hover:bg-red-700 shadow-md">🔒 Cerrar Caja</button>
             </div>
           </div>
         </div>
@@ -266,8 +277,10 @@ export default function CajaPage() {
         <div className="fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center z-50 p-4">
           <div className={`${modal} max-w-sm`}>
             <h2 className={`text-lg font-black mb-4 ${text}`}>💸 Registrar Gasto</h2>
-            <input value={gastoDesc} onChange={e => setGastoDesc(e.target.value)} placeholder="Descripción del gasto" className={`${inputCls} mb-3`} autoFocus />
-            <input type="number" value={gastoMonto} onChange={e => setGastoMonto(e.target.value)} placeholder="Monto (Q)" className={`${inputCls} text-xl font-bold text-center mb-3`} />
+            <input value={gastoDesc} onChange={e => setGastoDesc(e.target.value)}
+              placeholder="Descripción del gasto" className={`${inputCls} mb-3`} autoFocus />
+            <input type="number" value={gastoMonto} onChange={e => setGastoMonto(e.target.value)}
+              placeholder="Monto (Q)" className={`${inputCls} text-xl font-bold text-center mb-3`} />
             <div className="grid grid-cols-3 gap-2 mb-4">
               {CATEGORIAS.map(c => (
                 <button key={c.id} onClick={() => setGastoCategoria(c.id)}
@@ -278,7 +291,7 @@ export default function CajaPage() {
             </div>
             <div className="flex gap-3">
               <button onClick={() => setModalGasto(false)} className={`flex-1 py-2 rounded-xl border text-sm font-semibold ${modoOscuro ? 'border-gray-600 text-gray-300' : 'border-gray-200 text-gray-500'}`}>Cancelar</button>
-              <button onClick={agregarGasto} className="flex-2 px-6 py-2 rounded-xl bg-orange-500 text-white font-black text-sm hover:bg-orange-600 shadow-md">💸 Registrar</button>
+              <button onClick={agregarGasto} className="flex-1 py-2 rounded-xl bg-orange-500 text-white font-black text-sm hover:bg-orange-600 shadow-md">💸 Registrar</button>
             </div>
           </div>
         </div>
