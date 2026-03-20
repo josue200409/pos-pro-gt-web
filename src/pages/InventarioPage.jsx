@@ -179,12 +179,12 @@ const verHistorialPrecios = async (p) => {
     e.target.value = ''
   }
 
-  const productosFiltrados = productos.filter(p => {
-    const productosPaginados = productosFiltrados.slice((pagina - 1) * POR_PAGINA, pagina * POR_PAGINA)
-    const matchBusqueda = p.nombre.toLowerCase().includes(busqueda.toLowerCase()) || (p.codigo_barras && p.codigo_barras.includes(busqueda))
-    const matchCategoria = !categoriaFiltro || p.categoria_id === parseInt(categoriaFiltro)
-    return matchBusqueda && matchCategoria
-  })
+const productosFiltrados = productos.filter(p => {
+  const matchBusqueda = p.nombre.toLowerCase().includes(busqueda.toLowerCase()) || (p.codigo_barras && p.codigo_barras.includes(busqueda))
+  const matchCategoria = !categoriaFiltro || p.categoria_id === parseInt(categoriaFiltro)
+  return matchBusqueda && matchCategoria
+})
+const productosPaginados = productosFiltrados.slice((pagina - 1) * POR_PAGINA, pagina * POR_PAGINA)
 
   const bg = modoOscuro ? 'bg-gray-900' : 'bg-gray-50'
   const card = `rounded-2xl border ${modoOscuro ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-100'}`
